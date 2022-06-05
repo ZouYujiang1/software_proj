@@ -121,9 +121,12 @@ class ChargePileInfo(Base):
     # 只需要告诉添加的类型
     def __init__(self, kind):
         self.kind = kind
-
+    '''
     def __repr__(self):
         return "{" + f'"chargePileId":{self.chargePileID},"working":"{self.working}","broken":"{self.broken}","serviceLength":{self.serviceLength},"kind":"{self.kind}"' + "}"
+    '''
+    def __repr__(self):
+        return "{" + f'"id":{self.chargePileID},"working":"{self.working}","broken":"{self.broken}","service_length":{self.serviceLength},"kind":"{self.kind}"' + "}"
 
 
 # 充电桩服务的车辆信息，对应表六
@@ -144,9 +147,14 @@ class ServingCarInfoOfPile(Base):
         self.requestVol = requestVol
         self.realVol = realVol
 
+    '''
     def __repr__(self):
         return '{' + f'"chargePileId":{self.chargePileId},"userID":{self.userID}, "carVol":{self.carVol}, ' \
                      f'"requestVol":{self.requestVol},"queueTime":{self.queueTime}, "realVol":{self.realVol}' + '}'
+    '''
+    def __repr__(self):
+        return '{' + f'"id":{self.chargePileId},"client_id":{self.userID}, "car_vol":{self.carVol}, ' \
+                     f'"request_vol":{self.requestVol},"queue_minutes":{self.queueTime}, "real_vol":{self.realVol}' + '}'
 
 
 # 报表，对应表七
@@ -162,9 +170,15 @@ class ReportOfPile(Base):
     totalServiceCost = Column(Float, default=0, comment="累计服务费用")
     totalCost = Column(Float, default=0, comment="累计总费用，前面二者之和")
 
+    '''
     def __repr__(self):
         return '{' + f'"chargePileId":{self.chargePileId},"reportTime":"{self.reportTime}", "totalUsedTimes":{self.totalUsedTimes},"totalUsedMinutes":{self.totalUsedMinutes},' \
                      f'"totalUsedVol":{self.totalUsedVol},"totalChargeCost":{self.totalChargeCost},"totalServieceCost":{self.totalServiceCost},"totalCost":{self.totalCost}' + '}'
+    '''
+    def __repr__(self):
+        return '{' + f'"id":{self.chargePileId},"date":"{self.reportTime}", "used_times":{self.totalUsedTimes},"used_minutes":{self.totalUsedMinutes},' \
+                     f'"used_vol":{self.totalUsedVol},"charge_cost":{self.totalChargeCost},"service_cost":{self.totalServiceCost},"total_cost":{self.totalCost}' + '}'
+
 
     def __init__(self, pileID):
         self.chargePileId = pileID
