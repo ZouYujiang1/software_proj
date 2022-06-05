@@ -4,8 +4,8 @@
 
 ## 一.进行初始化
 
-1. 方法：调用backDB.init()
-2. 目的：初始化和设备有关的数据，包括，等候区容量，快充桩数，慢充桩数，快充功率，慢充功率，每个充电桩车位数(即充电区每个充电桩可排队的车位数)
+1. 方法：调用init()
+2. 目的：初始化和设备有关的数据，包括，等候区容量，快充桩数，慢充桩数，快充功率，慢充功率，每个充电桩车位数(即充电区每个充电桩可排队的车位数)，添加初始的充电桩，即const中定义的快充和慢充桩
 
 ## 二.用户相关，对应表三
 
@@ -16,6 +16,10 @@
 2. 查看用户信息
 
    方法：getUserInfo(nameOrID)，根据用户名或用户id，查看用户信息，成功以json格式（字典）返回用户的id，name，password，失败返回None(无该用户)
+   
+3. 获取所有用户信息，主要用来调试
+
+   方法：getAllUserInfo()，打印所有用户信息
 
 ## 三.设备相关，对应表二
 
@@ -34,17 +38,17 @@
 
    方法：setWaitingAreaCapacity(newCapacity)，成功返回1，失败返回0（没有调用init)
 
-3. 设置快充桩数
+3. 设置快充桩数，只支持数量比原来的大
 
-   方法：setQuickChargeNumber(newNumber)，成功返回1，失败返回0（没用调用init)
+   方法：setQuickChargeNumber(newNumber)，成功返回1，失败返回0或-1，0表示没有调用init，-1表示新的number比原来的小
 
 4. 快充桩数加一（在加入新的快充桩的时候，数据库自己处理这个）
 
    方法：addQuickChargeNumber()，成功返回1，失败返回0（没用调用init)
 
-5. 设置慢充桩数
+5. 设置慢充桩数，只支持数量比原来的大
 
-   方法：setSlowChargeNumber(newNumber)，成功返回1，失败返回0（没用调用init)
+   方法：setSlowChargeNumber(newNumber)，成功返回1，失败返回0或-1,0表示没用调用init，-1表示新的number比原来的小
 
 6. 慢充桩数加一（在加入新的慢充桩的时候，数据库自己处理这个）
 
@@ -66,7 +70,7 @@
 
 1. 添加新的排队用户信息
 
-   方法：addQueuingUser(userID, userName, chargingMode, queueNO, carsAhead, timeOfApplyingNo)，成功返回userID，和传入的参数一样；失败返回-1或0或-2，-1表示充电模式有误（不是‘T’和‘F'),0表示不存在该用户（用户id或名字出错），-2表示重复插入同一个用户的排队信息
+   方法：addQueuingUser(userID, userName, chargingMode, carsAhead, timeOfApplyingNo)，成功返回新的排队号，失败返回-1或0或-2，-1表示充电模式有误（不是‘T’和‘F'),0表示不存在该用户（用户id或名字出错），-2表示重复插入同一个用户的排队信息
 
 2. 获取排队用户的信息
 
@@ -91,7 +95,9 @@
 
    方法：setCarsAhead(nameOrID,newCars)，成功返回1，失败返回0
 
-   
+5. 获取所有的排队用户的信息，主要用来调试
+
+   方法：getAllQueuingUserInfo()，简单打印
 
    
 
@@ -106,8 +112,8 @@
    方法：getPileInfo(chargePileID)，失败返回None,成功以json的格式返回以下字段
 
    - chargePileId 充电桩编号
-   - working，开或关（True，表示开，返回的是字符串）
-   -  broken，故障否（True，表示故障，返回的是字符串）
+   - working，开或关（True表示打开）
+   -  broken，故障否（True表示故障）
    - serviceLength，当前充电桩的充电区的车辆数
    -  kind，类型，快充或慢充
 
@@ -134,6 +140,10 @@
 8. 设置充电桩服务车辆数（在充电区排队的），应该主要使用上一个方法
 
    方法：setServicelenOfPile( chargePileID, newLen)，成功返回1，失败返回0或-1,0表示不存在该充电桩，-1表示设置的长度大于最大长度（车位数）
+   
+9. 获取所有的充电桩信息
+
+   方法：getAllPileInfo()，简单打印
 
 ## 六.报表相关，对应表七
 
@@ -177,6 +187,10 @@
 8. 添加服务费用
 
    方法：addTotalServiceCost(pileID, costToAdd)，成功返回1，失败返回0
+   
+9. 获取所有的报表信息
+
+   方法：getAllReportInfo()，简单打印
 
 
 
@@ -220,6 +234,10 @@
 8. 删除充电桩服务车辆信息（应该在充电结束时，适时删除，不需要这个信息的时候）
 
    方法：deleteServingCarInfo(pileID, userID)，成功返回1，失败返回0(不存在服务信息)
+   
+9. 获取所有等候服务的车辆信息
+
+   方法：getAllServingCarInfo（），简单打印
 
 
 
@@ -258,6 +276,46 @@
 5. 删除订单，结束充电时，打印订单之后
 
    方法：deleteOrder(userNameOrID)，删除对应的所有订单
+
+6. 获取所有订单信息
+
+   方法：getAllOrderInfo（），简单打印
+
+   
+
+## 九.一些说明
+
+
+
+1. 由于删除充电桩比较麻烦，所以只支持添加新的充电桩，故设置快充和慢充的数量时，新的数量应比原来的大
+
+2. 上层应尽量做正确的操作，不清楚返回值的时候打印看一下，对应说明文档
+
+3. 充电桩报表在添加充电桩时自动添加，不用上层调用，同时自动添加对应的快充或慢充桩的数量（加一），也不用上层调用
+
+4. 部分初始值是没有意义的
+
+5. 名字未换成前端需要的
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
 
    
 
