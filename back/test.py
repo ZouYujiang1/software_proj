@@ -4,6 +4,7 @@ import json
 import time
 
 import backDB
+import const
 
 db = backDB.DB()
 
@@ -14,13 +15,15 @@ def testUser():
     if id == -1:
         print("已有同名用户")
 
+    db.getAllUserInfo()
+    '''
     r = db.getUserInfo(nameOrID="小明")
     if r is None:
         print("没有该用户")
     else:
         print(type(r.get("id")))
         print(r)
-
+    '''
     '''
     id = 4
     # id = 1
@@ -34,7 +37,8 @@ def testUser():
 
 # 测试排队用户，对应表一
 def testQueuingUser():
-    r = db.addQueuingUser(userID=1, userName="小明", chargingMode="T", queueNO=123456, carsAhead=0,
+    # db.deleteQueuingUser(nameOrID=1)
+    r = db.addQueuingUser(userID=1, userName="小明", chargingMode="T", carsAhead=0,
                           timeOfApplyingNo=datetime.datetime.now())
     if r == 0:
         print("不存在该用户")
@@ -44,6 +48,8 @@ def testQueuingUser():
         print("这个用户已有排队信息")
     else:
         print(db.getQueuingUserInfo(nameOrID=1))
+
+    db.getAllQueuingUserInfo()
     '''
     print(db.getQueuingUserInfo(nameOrID=1))
     r = db.setChargeMode(nameOrID=1, newMode="T")
@@ -54,6 +60,7 @@ def testQueuingUser():
     else:
         print(db.getQueuingUserInfo(nameOrID=1))
     '''
+    '''
     print(db.getQueuingUserInfo(nameOrID=1))
     r = db.setCarsAhead(nameOrID=1, newCars=10)
     if r == -1:
@@ -62,6 +69,7 @@ def testQueuingUser():
         print("无对应排队信息")
     else:
         print(db.getQueuingUserInfo(nameOrID=1))
+    '''
     '''
     r = db.getQueuingUserInfo(nameOrID=1)
     if r is None:
@@ -78,73 +86,106 @@ def testQueuingUser():
 
 # 测试设备相关的，对应表二
 def testEquipment():
+
     r = db.getEquipmentInfo()
     if r is None:
-        print("未调用backDB.init")
+        print("未调用init")
     else:
         print(r)
-
+    '''
     r = db.setWaitingAreaCapacity(newCapacity=10)
     if r == 0:
-        print("未调用backDB.init")
+        print("未调用init")
     else:
         print(db.getEquipmentInfo())
-
+    '''
+    '''
     r = db.setQuickChargeNumber(newNumber=11)
     if r == 0:
-        print("未调用backDB.init")
+        print("未调用init")
+    elif r ==-1:
+        print("数量比原来的小，不支持修改")
     else:
         print(db.getEquipmentInfo())
+    db.getAllPileInfo()
+    db.getAllReportInfo()
+    '''
 
+    r = db.setSlowChargeNumber(newNumber=12)
+    if r == 0:
+        print("未调用init")
+    elif r == -1:
+        print("数量比原来的小，不支持修改")
+    else:
+        print(db.getEquipmentInfo())
+    db.getAllPileInfo()
+    db.getAllReportInfo()
+
+    '''
     r = db.addQuickChargeNumber()
     if r == 0:
-        print("未调用backDB.init")
+        print("未调用init")
     else:
         print(db.getEquipmentInfo())
 
     r = db.setSlowChargeNumber(newNumber=5)
     if r == 0:
-        print("未调用backDB.init")
+        print("未调用init")
     else:
         print(db.getEquipmentInfo())
 
     r = db.addSlowChargeNumber()
     if r == 0:
-        print("未调用backDB.init")
+        print("未调用init")
     else:
         print(db.getEquipmentInfo())
 
     r = db.setQuickChargePower(newPower=40)
     if r == 0:
-        print("未调用backDB.init")
+        print("未调用init")
     else:
         print(db.getEquipmentInfo())
 
     r = db.setSlowChargePower(newPower=10)
     if r == 0:
-        print("未调用backDB.init")
+        print("未调用init")
     else:
         print(db.getEquipmentInfo())
 
     r = db.setParkingSpace(newSpace=4)
     if r == 0:
-        print("未调用backDB.init")
+        print("未调用init")
     else:
         print(db.getEquipmentInfo())
-
+    '''
 
 # 测试充电桩，对应表五
 def testPile():
     print(db.getEquipmentInfo())
-
+    '''
     r = db.addPile("M")
     if r == -1:
         print("只能是T或F")
-
+    '''
     r = db.addPile("T")
     if r == -1:
         print("只能是T或F")
+    else:
+        print(db.getPileInfo(chargePileID=r))
+    db.getAllPileInfo()
     print(db.getEquipmentInfo())
+    print(db.getReportForm(pileID=r))
+    '''
+    db.setPileBroken(chargePileID=r)
+    print(db.getPileInfo(chargePileID=r))
+    db.turnOffPile(chargePileID=r)
+    print(db.getPileInfo(chargePileID=r))
+
+    db.setPileWork(chargePileID=r)
+    print(db.getPileInfo(chargePileID=r))
+    db.turnOnPile(chargePileID=r)
+    print(db.getPileInfo(chargePileID=r))
+    '''
     '''
     r = db.addPile("F")
     if r == -1:
@@ -207,7 +248,7 @@ def testPile():
 
 # 测试报表，对应表七
 def testReport():
-    '''
+
     r = db.addReportForm(pileID=1)
     if r == 0:
         print("不存在该充电桩")
@@ -215,7 +256,8 @@ def testReport():
         print("该充电桩已存在报表")
     else:
         print(db.getReportForm(pileID=1))
-
+    db.getAllReportInfo()
+    '''
     r =db.getReportForm(pileID=1)
     if r is None:
         print("不存在报表")
@@ -260,13 +302,14 @@ def testReport():
     else:
         print(db.getReportForm(pileID=1))
     '''
+    '''
     print(db.getReportForm(pileID=1))
     r = db.addTotalServiceCost(pileID=1, costToAdd=20)
     if r == 0:
         print("不存在报表")
     else:
         print(db.getReportForm(pileID=1))
-
+    '''
 
 # 测试详单，对应表四
 def testOrder():
@@ -274,13 +317,14 @@ def testOrder():
     id = r
     if r == 0:
         print("用户不存在，或信息有误")
-
+    db.getAllOrderInfo()
+    '''
     r = db.getOrder(orderID=id)
     if r is None:
         print("不存在该订单")
     else:
         print(r)
-
+    
     r = db.setOrderWhenStartCharging(orderID=id, idOfChargePile=1, startUpTime=datetime.datetime.now(), startingVol=90)
     if r == 0:
         print("订单不存在")
@@ -304,17 +348,19 @@ def testOrder():
         print("不存在该订单")
     else:
         print(r)
-
+    '''
 
 # 测试充电桩服务车辆信息，对应表六
 def testServingCar():
+    # db.deleteServingCarInfo(pileID=1,userID=1)
+
     r = db.getServingCarInfoOfPile(pileID=1)
     if r == None:
         print("该充电桩无服务信息或不存在这个充电桩")
     else:
         print(r)
 
-    r = db.addServingCarInfo(pileID=1, userID=2, carVol=100, requestVol=40, startVol=60)
+    r = db.addServingCarInfo(pileID=1, userID=1, carVol=100, requestVol=40, startVol=60)
     if r == 0:
         print("不存在对应的充电桩")
     elif r == -1:
@@ -323,6 +369,7 @@ def testServingCar():
         print("已有服务信息")
     else:
         print(db.getServingCarInfoOfPile(pileID=1))
+    db.getAllServingCarInfo()
 
     '''
     print(db.getServingCarInfoOfPile(pileID=1))
@@ -332,12 +379,14 @@ def testServingCar():
 
     print(db.getServingCarInfoOfPile(pileID=1))
     '''
+    '''
     print(db.getServingCarInfoOfPile(pileID=1))
     r = db.setRequestVol(pileID=1, userID=1, newRequestVol=100)
     if r == 0:
         print("不存在服务信息")
 
     print(db.getServingCarInfoOfPile(pileID=1))
+    '''
     '''
     
     print(db.getServingCarInfoOfPile(pileID=1))
@@ -372,31 +421,56 @@ def testServingCar():
     print(db.getServingCarInfoOfPile(pileID=1))
     '''
 
+# 测试初始化
+def testInit():
+    print(db.getEquipmentInfo())
+    # 打印初始化的快充
+    for i in range(const.QUICK_CHARGE_NUMBER):
+        print(db.getPileInfo(chargePileID=i+1))
+        print(db.getReportForm(pileID=i+1))
+    # 打印初始化的慢充
+    for i in range(const.SLOW_CHARGE_NUMBER):
+        print(db.getPileInfo(chargePileID=i + 1+const.QUICK_CHARGE_NUMBER))
+        print(db.getReportForm(pileID=i + 1 + const.QUICK_CHARGE_NUMBER))
+
 
 if __name__ == "__main__":
-    backDB.init()
+    db.init()
+    # testInit()
+
     # testOrder()
     # testServingCar()
     # testPile()
     # testReport()
-    # testPile()
+    testPile()
     # testUser()
-    # testQueuingUser()
+    #testQueuingUser()
     # testEquipment()
 
-    # estjson()
+    # testjson()
 
 
 # 键值必须用双引号，数字等不用，字符串必须用双引号
+
 def testjson():
     t = {"broken": True}
     s = json.dumps(t)
     print(s)
+
+    t = '{"broken":"True"}'
+    s = json.loads(t)
+    print(s)
+
+    if s.get("broken") == "True":
+        s["broken"] = True
+    print(type(s.get("broken")))
     '''
-    
+
     d = '{"id":123,"name":"xiaoming"}' # 最外层用单引号
-    
+
     r = json.loads(d)
     print(type(r))
     print(type(r.get("name")))
     '''
+
+

@@ -26,10 +26,10 @@ session = Session()
 class QueuingUser(Base):
     __tablename__ = "queuingUser"
 
-    userID = Column(Integer, ForeignKey("user.id"), primary_key=True, comment="用户id")
+    userID = Column(Integer, ForeignKey("user.id"), comment="用户id")
     userName = Column(String(const.NAME_AND_PASSWORD_LEN), ForeignKey("user.name"), nullable=False, comment="用户姓名")
     chargingMode = Column(String(1), nullable=False, comment="充电模式")
-    queueNO = Column(Integer, nullable=False, comment="排队号码")
+    queueNO = Column(Integer,autoincrement=True,primary_key=True, comment="排队号码")
     carsAhead = Column(Integer, default=0, comment="相同模式下之前的车辆数")
     timeOfApplyingNO = Column(DateTime, nullable=False, comment="申请排队号时间")
 
@@ -37,11 +37,10 @@ class QueuingUser(Base):
     def __repr__(self):
         return '{' + f'"id":{self.userID},"name":"{self.userName}","mode":"{self.chargingMode}","No":{self.queueNO},"cars":{self.carsAhead},"applyTime":"{self.timeOfApplyingNO}"' + '}'
 
-    def __init__(self, userID, userName, chargingMode, queueNO, carsAhead, timeOfApplyingNo):
+    def __init__(self, userID, userName, chargingMode,carsAhead, timeOfApplyingNo):
         self.userID = userID
         self.userName = userName
         self.chargingMode = chargingMode
-        self.queueNO = queueNO
         self.carsAhead = carsAhead
         self.timeOfApplyingNO = timeOfApplyingNo
 
@@ -51,8 +50,8 @@ class EquipmentInfo(Base):
     __tablename__ = "equipmentInfo"
     id = Column(Integer, default=1, primary_key=True)  # 方便更改
     waitingAreaCapacity = Column(Integer, default=const.WAITING_AREA_CAPACITY, comment="等候区容量")
-    quickChargeNumber = Column(Integer, default=const.QUICK_CHARGE_NUMBER, comment="快充桩数")
-    slowChargeNumber = Column(Integer, default=const.SLOW_CHARGE_NUMBER, comment="慢充桩数")
+    quickChargeNumber = Column(Integer, default=0, comment="快充桩数")
+    slowChargeNumber = Column(Integer, default=0, comment="慢充桩数")
     quickChargePower = Column(Float, default=const.QUICK_CHARGE_POWER, comment="快充功率")
     slowChargePower = Column(Float, default=const.SLOW_CHARGE_POWER, comment="慢充功率")
     parkingSpaceOfChargePile = Column(Integer, default=const.NUMBER_OF_CHARGE_PILE, comment="每个充电桩车位数")
@@ -122,13 +121,16 @@ class ChargePileInfo(Base):
     # 只需要告诉添加的类型
     def __init__(self, kind):
         self.kind = kind
-
+    '''
     def __repr__(self):
         return "{" + f'"chargePileId":{self.chargePileID},"working":"{self.working}","broken":"{self.broken}","serviceLength":{self.serviceLength},"kind":"{self.kind}"' + "}"
+    '''
+    def __repr__(self):
+        return "{" + f'"id":{self.chargePileID},"working":"{self.working}","broken":"{self.broken}","service_length":{self.serviceLength},"kind":"{self.kind}"' + "}"
 
 
 # 充电桩服务的车辆信息，对应表六
-# 主键有待商榷，应为chargePileID和userID的复合主键
+# 主键为chargePileID和userID的复合主键
 class ServingCarInfoOfPile(Base):
     __tablename__ = "servingCarInfoOfPile"
     chargePileId = Column(Integer, comment="充电桩编号", primary_key=True)
@@ -145,9 +147,14 @@ class ServingCarInfoOfPile(Base):
         self.requestVol = requestVol
         self.realVol = realVol
 
+    '''
     def __repr__(self):
         return '{' + f'"chargePileId":{self.chargePileId},"userID":{self.userID}, "carVol":{self.carVol}, ' \
                      f'"requestVol":{self.requestVol},"queueTime":{self.queueTime}, "realVol":{self.realVol}' + '}'
+    '''
+    def __repr__(self):
+        return '{' + f'"id":{self.chargePileId},"client_id":{self.userID}, "car_vol":{self.carVol}, ' \
+                     f'"request_vol":{self.requestVol},"queue_minutes":{self.queueTime}, "real_vol":{self.realVol}' + '}'
 
 
 # 报表，对应表七
@@ -163,9 +170,15 @@ class ReportOfPile(Base):
     totalServiceCost = Column(Float, default=0, comment="累计服务费用")
     totalCost = Column(Float, default=0, comment="累计总费用，前面二者之和")
 
+    '''
     def __repr__(self):
         return '{' + f'"chargePileId":{self.chargePileId},"reportTime":"{self.reportTime}", "totalUsedTimes":{self.totalUsedTimes},"totalUsedMinutes":{self.totalUsedMinutes},' \
                      f'"totalUsedVol":{self.totalUsedVol},"totalChargeCost":{self.totalChargeCost},"totalServieceCost":{self.totalServiceCost},"totalCost":{self.totalCost}' + '}'
+    '''
+    def __repr__(self):
+        return '{' + f'"id":{self.chargePileId},"date":"{self.reportTime}", "used_times":{self.totalUsedTimes},"used_minutes":{self.totalUsedMinutes},' \
+                     f'"used_vol":{self.totalUsedVol},"charge_cost":{self.totalChargeCost},"service_cost":{self.totalServiceCost},"total_cost":{self.totalCost}' + '}'
+
 
     def __init__(self, pileID):
         self.chargePileId = pileID
@@ -192,10 +205,16 @@ class DB(object):
         if queryResult is not None:
             return json.loads(queryResult.__repr__())
         return queryResult
+    # 获取所有的用户信息，主要用来调试
+    def getAllUserInfo(self):
+        print("所有用户信息如下：")
+        query_result = session.query(User).all()
+        for result in query_result:
+            print(result)
 
     # 表一相关
     # 添加排队的用户,成功返回userid,失败返回-1
-    def addQueuingUser(self, userID, userName, chargingMode, queueNO, carsAhead, timeOfApplyingNo):
+    def addQueuingUser(self, userID, userName, chargingMode,carsAhead, timeOfApplyingNo):
         # 模式有误
         if chargingMode != 'F' and chargingMode != 'T':
             return -1
@@ -203,14 +222,15 @@ class DB(object):
         if DB.getUserInfo(self, nameOrID=userID) is None or DB.getUserInfo(self, nameOrID=userName) is None:
             return 0
 
-        newQueuingUser = QueuingUser(userID, userName, chargingMode, queueNO, carsAhead, timeOfApplyingNo)
-        try:
-            session.add(newQueuingUser)
-            session.commit()
-            return userID  # 成功
-        except SQLAlchemyError as e:
-            session.rollback()
-            return -2  # 同一个用户多个记录
+        # 重复插入
+        if DB.getQueuingUserInfo(self,nameOrID=userID) is not None:
+            return -2
+
+        newQueuingUser = QueuingUser(userID, userName, chargingMode,  carsAhead, timeOfApplyingNo)
+        session.add(newQueuingUser)
+        session.commit()
+        return newQueuingUser.queueNO  # 成功
+
 
     # 获得排队用户的信息
     def getQueuingUserInfo(self, nameOrID):
@@ -260,6 +280,12 @@ class DB(object):
             session.add(queryResult)
             session.commit()
             return 1
+    # 获取有所有排队用户的信息，主要用来调试
+    def getAllQueuingUserInfo(self):
+        print("所有排队用户信息如下：")
+        query_result = session.query(QueuingUser).all()
+        for result in query_result:
+            print(result)
 
     # 表二相关
     # 获取设备信息
@@ -272,6 +298,7 @@ class DB(object):
     # 设置等候区大小
     def setWaitingAreaCapacity(self, newCapacity):
         queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
+
         if queryResult is None:
             return 0
         else:
@@ -286,9 +313,11 @@ class DB(object):
         if queryResult is None:
             return 0
         else:
-            queryResult.quickChargeNumber = newNumber
-            session.add(queryResult)
-            session.commit()
+            if newNumber < queryResult.quickChargeNumber:
+                return -1
+            # 添加新增的充电桩
+            for i in range(newNumber - queryResult.quickChargeNumber):
+                DB.addPile(self,kind="F")
             return 1
 
     # 快充数加一
@@ -308,9 +337,11 @@ class DB(object):
         if queryResult is None:
             return 0
         else:
-            queryResult.slowChargeNumber = newNumber
-            session.add(queryResult)
-            session.commit()
+            if newNumber < queryResult.slowChargeNumber:
+                return -1
+            # 添加新增的充电桩
+            for i in range(newNumber - queryResult.slowChargeNumber):
+                DB.addPile(self,kind="T")
             return 1
 
     # 慢充数加一
@@ -417,6 +448,13 @@ class DB(object):
             session.delete(r)
             session.commit()
 
+    # 获取所有订单信息，主要用来调试
+    def getAllOrderInfo(self):
+            print("所有订单信息如下：")
+            query_result = session.query(ChargingOrder).all()
+            for result in query_result:
+                print(result)
+
     # 表五相关
     # 添加新的充电桩
     def addPile(self, kind):
@@ -432,9 +470,9 @@ class DB(object):
         else:
             DB.addSlowChargeNumber(self)
 
-        # 生成相应的报表（初始化）
+        # 生成相应的报表,一个充电桩一个报表
+        DB.addReportForm(self,pileID=newPile.chargePileID)
 
-        # 增加对应的设备数
         return newPile.chargePileID  # 返回新添加的id
 
     # 获取充电桩信息
@@ -442,8 +480,17 @@ class DB(object):
         queryResult = session.query(ChargePileInfo).filter(ChargePileInfo.chargePileID == chargePileID).first()
 
         if queryResult is not None:
-            return json.loads(queryResult.__repr__())
-
+            t = json.loads(queryResult.__repr__())
+            # 转换bool值
+            if t.get("working") == "True":
+                t["working"] = True
+            else:
+                t["working"] = False
+            if t.get("broken") == "True":
+                t["broken"] = True
+            else:
+                t["broken"] = False
+            return t
         return queryResult
 
     # 关闭充电桩
@@ -519,6 +566,13 @@ class DB(object):
             session.commit()
             return 1
 
+    # 获取所有充电桩信息
+    def getAllPileInfo(self):
+        print("所有充电桩信息如下：")
+        query_result = session.query(ChargePileInfo).all()
+        for result in query_result:
+            print(result)
+
     # 表六相关
     # 最开始的实时电量为车辆的初始电量
     def addServingCarInfo(self, pileID, userID, carVol, requestVol, startVol):
@@ -540,9 +594,11 @@ class DB(object):
     # 获取服务车辆信息
     def getServingCarInfoOfPile(self, pileID):
         requestResult = session.query(ServingCarInfoOfPile).filter(ServingCarInfoOfPile.chargePileId == pileID).all()
-        if requestResult is not None:
-            return json.loads(requestResult.__repr__())
-        return requestResult
+        if len(requestResult) ==0:
+            return None
+
+        return json.loads(requestResult.__repr__())
+
 
     # 添加排队时长
     def addQueueTime(self, pileID, userID, timeToAdd):
@@ -614,6 +670,13 @@ class DB(object):
             session.delete(queryResult)
             session.commit()
             return 1
+
+    # 获取所有服务车辆信息
+    def getAllServingCarInfo(self):
+        print("所有等候服务车辆信息如下：")
+        query_result = session.query(ServingCarInfoOfPile).all()
+        for result in query_result:
+            print(result)
 
     # 表七相关
     # 添加报表
@@ -706,18 +769,32 @@ class DB(object):
             session.commit()
             return 1
 
+    # 获取所有报表信息
+    def getAllReportInfo(self):
+            print("所有报表信息如下：")
+            query_result = session.query(ReportOfPile).all()
+            for result in query_result:
+                print(result)
 
-# 初始化一些设备的常量
-def init():
-    queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
-    if queryResult is None:
-        equipmentInfo = EquipmentInfo()
-        session.add(equipmentInfo)
-        session.commit()
-
+    # 初始化一些设备的常量
+    def init(self):
+        queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
+        # 第一次打开
+        if queryResult is None:
+            # 初始化设备信息
+            equipmentInfo = EquipmentInfo()
+            session.add(equipmentInfo)
+            session.commit()
+            # 添加const里声明的快充和慢充数
+            # 添加快充
+            for i in range(const.QUICK_CHARGE_NUMBER):
+                DB.addPile(self,"F")
+            # 添加慢充
+            for i in range(const.SLOW_CHARGE_NUMBER):
+                DB.addPile(self,"T")
 
 if __name__ == "__main__":
-    init()
 
     db = DB()
+    db.init()
 
