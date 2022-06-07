@@ -14,7 +14,7 @@ import time
 import const
 
 # 引擎
-engine = create_engine("sqlite:///softwareEngineering.db", echo=False)  # echo是显示详细过程
+engine = create_engine("sqlite:///softwareEngineering.db", echo=False, connect_args={'check_same_thread': False})  # echo是显示详细过程
 # 基类，其他的类继承它
 Base = declarative_base(engine)
 # 会话
@@ -205,6 +205,27 @@ class DB(object):
         if queryResult is not None:
             return json.loads(queryResult.__repr__())
         return queryResult
+
+    # 匹配用户密码
+    def checkUserPwd(self, nameOrID, password):
+        queryResult = session.query(User).filter(or_(User.id == nameOrID, User.name == nameOrID)).first()
+        if queryResult is not None:
+            if password == queryResult.password:
+                return queryResult.id
+            else:
+                return 0
+        else:
+            return -1
+
+    # 修改密码
+    def resetUserPwd(self, nameOrID, password):
+        queryResult = session.query(User).filter(or_(User.id == nameOrID, User.name == nameOrID)).first()
+        if queryResult is not None:
+            queryResult.password = password
+            return queryResult.id
+        else:
+            return -1
+
     # 获取所有的用户信息，主要用来调试
     def getAllUserInfo(self):
         print("所有用户信息如下：")
