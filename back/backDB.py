@@ -296,7 +296,7 @@ class DB(object):
         else:
             # 模式一样
             if newMode == queryResult.chargingMode:
-                return -2
+                return -3
             requestVol = queryResult.requestVol
             # 删除旧的排队信息
             DB.deleteQueuingUser(self,nameOrID=name)
