@@ -1,21 +1,30 @@
+from cgitb import text
+from datetime import datetime
 import json
 from tabnanny import check
+from unittest import result
 from urllib import response
+from xmlrpc.client import DateTime
 from flask import Flask, make_response, request, session, url_for
-from sqlalchemy import true
-from backDB import DB
+from sqlalchemy import func, true
+from backDB import DB, QueuingUser
 
 db = DB()
+db.init()
 app = Flask(__name__)
 
 @app.route("/")
 def printAllTestURL():
-    urlDict = {
-        'usrLogon':request.url + url_for('usrLogon',name='Jackie',password='114514'),
-        'usrLogin':request.url + url_for('usrLogin',name='Jackie',password='114514'),
-        'usrResetPWD':request.url + url_for('usrResetPWD',name='Jackie',password='114514')
-        }
-    return urlDict
+    urlTestList = '{'
+    urlTestList += '\nusrLogon: ' + request.url + url_for('usrLogon',name='Jackie',password='114514')
+    urlTestList += '\nusrLogin: ' + request.url + url_for('usrLogin',name='Jackie',password='114514')
+    urlTestList += '\nusrResetPWD: ' + request.url + url_for('usrResetPWD',name='Jackie',password='114514')
+    urlTestList += '\nusrPersonal: ' + request.url + url_for('usrPersonal',name='Jackie',password='114514')
+    urlTestList += '\nusrGetQueueNo: ' + request.url + url_for('usrGetQueueNo',name='Jackie',chargingMode='F')
+    urlTestList += '\nadminUsrInfo: ' + request.url + url_for('adminUsrInfo')
+    urlTestList += '\n}'
+    print(urlTestList)
+    return urlTestList
 
 @app.route("/usr/logon")
 def usrLogon():
@@ -30,6 +39,7 @@ def usrLogin():
     name = request.args['name']
     password = request.args['password']
 
+    # checkResult成功时返回id，失败时返回0或-1
     checkResult = db.checkUserPwd(name, password)
     if checkResult > 0:
         return json.dumps({'status':'UsrId OnLine Now', 'id':checkResult})
@@ -43,8 +53,39 @@ def usrResetPWD():
     name = request.args['name']
     password = request.args['password']
 
+    # checkResult成功时返回id，失败时返回-1
     checkResult = db.resetUserPwd(name, password)
     return json.dumps({'id':checkResult})
 
+@app.route("/usr/personal")
+def usrPersonal():
+    name = request.args['name']
+    password = request.args['password']
+
+    # checkResult成功时返回id，失败时返回-1
+    checkResult = db.checkUserPwd(name, password)
+    if checkResult > 0:
+        return db.getUserInfo(name)
+    else:
+        return json.dumps({'id':-1,'status':'UsrId or UsrName Not Found'})
+
+@app.route("/usr/getQueueNo")
+def usrGetQueueNo():
+    usrName = request.args['name']
+    chargingMode = request.args['chargingMode']
+
+    timeOfApplyingNo = datetime.now()
+    carsAhead = 0;
+    # print(db.getUserInfo(usrName))
+    usrID = db.getUserInfo(usrName).get('id')
+    queueNo = db.addQueuingUser(usrID, chargingMode, carsAhead, timeOfApplyingNo)
+    return json.dumps({'queueNo' : queueNo})
+
+
+@app.route("/admin/usr-info")
+def adminUsrInfo():
+    return str(db.getAllUserInfo())
+
 if __name__ == '__main__':
     app.run(port='5000')
+    print('HelloWorld')

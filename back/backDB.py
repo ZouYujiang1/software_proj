@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer, DateTime, Float, Boolean  # 使用的类型
 from sqlalchemy.ext.declarative import declarative_base  # ORM(对象关系映射的基类）
 from sqlalchemy import create_engine
+from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker  # 会话（入口）
 from sqlalchemy import or_, and_
 from sqlalchemy import ForeignKey
@@ -232,6 +233,7 @@ class DB(object):
         query_result = session.query(User).all()
         for result in query_result:
             print(result)
+        return query_result
 
     # 表一相关
     # 添加排队的用户,成功返回userid,失败返回-1
@@ -247,6 +249,7 @@ class DB(object):
         if DB.getQueuingUserInfo(self,nameOrID=userID) is not None:
             return -2
 
+        carsAhead = session.query(func.max(QueuingUser.carsAhead)).scalar() + 1
         newQueuingUser = QueuingUser(userID, userName, chargingMode,  carsAhead, timeOfApplyingNo)
         session.add(newQueuingUser)
         session.commit()
