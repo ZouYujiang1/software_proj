@@ -31,18 +31,18 @@ class QueuingUser(Base):
     userName = Column(String(const.NAME_AND_PASSWORD_LEN), ForeignKey("user.name"), nullable=False, comment="用户姓名")
     chargingMode = Column(String(1), nullable=False, comment="充电模式")
     queueNO = Column(Integer,autoincrement=True,primary_key=True, comment="排队号码")
-    carsAhead = Column(Integer, default=0, comment="相同模式下之前的车辆数")
+    requestVol = Column(Float, default=0, comment="请求充电量")
     timeOfApplyingNO = Column(DateTime, nullable=False, comment="申请排队号时间")
 
     # query查询的时候返回这个
     def __repr__(self):
-        return '{' + f'"id":{self.userID},"name":"{self.userName}","mode":"{self.chargingMode}","No":{self.queueNO},"cars":{self.carsAhead},"applyTime":"{self.timeOfApplyingNO}"' + '}'
+        return '{' + f'"id":{self.userID},"name":"{self.userName}","mode":"{self.chargingMode}","No":{self.queueNO},"requestVol":{self.requestVol},"applyTime":"{self.timeOfApplyingNO}"' + '}'
 
-    def __init__(self, userID, userName, chargingMode,carsAhead, timeOfApplyingNo):
+    def __init__(self, userID, userName, chargingMode,requestVol, timeOfApplyingNo):
         self.userID = userID
         self.userName = userName
         self.chargingMode = chargingMode
-        self.carsAhead = carsAhead
+        self.requestVol = requestVol
         self.timeOfApplyingNO = timeOfApplyingNo
 
 
@@ -138,15 +138,15 @@ class ServingCarInfoOfPile(Base):
     userID = Column(Integer, comment="用户ID", primary_key=True)
     carVol = Column(Float, comment="车辆的电池总容量")
     requestVol = Column(Float, comment="请求充电量")
-    queueTime = Column(Float, default=0, comment="排队时长,以分钟为单位")
-    realVol = Column(Float, comment="车辆的实时电量")
 
-    def __init__(self, pileID, userID, carVol, requestVol, realVol):
+    # queueTime = Column(Float, default=0, comment="排队时长,以分钟为单位")
+    # realVol = Column(Float, comment="车辆的实时电量")
+
+    def __init__(self, pileID, userID, carVol):
         self.chargePileId = pileID
         self.userID = userID
         self.carVol = carVol
-        self.requestVol = requestVol
-        self.realVol = realVol
+        self.requestVol = DB.getQueuingUserInfo(self,userID)["requestVol"]
 
     '''
     def __repr__(self):
@@ -155,7 +155,7 @@ class ServingCarInfoOfPile(Base):
     '''
     def __repr__(self):
         return '{' + f'"id":{self.chargePileId},"client_id":{self.userID}, "car_vol":{self.carVol}, ' \
-                     f'"request_vol":{self.requestVol},"queue_minutes":{self.queueTime}, "real_vol":{self.realVol}' + '}'
+                     f'"request_vol":{self.requestVol}' + '}'
 
 
 # 报表，对应表七
@@ -226,6 +226,13 @@ class DB(object):
             return queryResult.id
         else:
             return -1
+    # 根据用户名求得对应id,失败返回-1
+    def getUserID(self,name):
+        queryResult = session.query(User).filter(User.name == name).first()
+        if queryResult is not None:
+            return queryResult.id
+        else:
+            return -1
 
     # 获取所有的用户信息，主要用来调试
     def getAllUserInfo(self):
@@ -237,7 +244,7 @@ class DB(object):
 
     # 表一相关
     # 添加排队的用户,成功返回userid,失败返回-1
-    def addQueuingUser(self, userID, userName, chargingMode,carsAhead, timeOfApplyingNo):
+    def addQueuingUser(self, userID, userName, chargingMode,requestVol, timeOfApplyingNo):
         # 模式有误
         if chargingMode != 'F' and chargingMode != 'T':
             return -1
@@ -249,8 +256,8 @@ class DB(object):
         if DB.getQueuingUserInfo(self,nameOrID=userID) is not None:
             return -2
 
-        carsAhead = session.query(func.max(QueuingUser.carsAhead)).scalar() + 1
-        newQueuingUser = QueuingUser(userID, userName, chargingMode,  carsAhead, timeOfApplyingNo)
+        # carsAhead = session.query(func.max(QueuingUser.carsAhead)).scalar() + 1
+        newQueuingUser = QueuingUser(userID, userName, chargingMode,  requestVol, timeOfApplyingNo)
         session.add(newQueuingUser)
         session.commit()
         return newQueuingUser.queueNO  # 成功
@@ -279,20 +286,36 @@ class DB(object):
             return 0  # 不存在这个信息
 
     # 修改充电模式
-    def setChargeMode(self, nameOrID, newMode):
+    def setChargeMode(self, name, newMode):
         if newMode != "T" and newMode != "F":
             return -1
 
+        queryResult = session.query(QueuingUser).filter(QueuingUser.userName == name).first()
+        if queryResult is None:
+            return 0
+        else:
+            # 模式一样
+            if newMode == queryResult.chargingMode:
+                return -3
+            requestVol = queryResult.requestVol
+            # 删除旧的排队信息
+            DB.deleteQueuingUser(self,nameOrID=name)
+            # 修改充电模式要重新排队
+            return DB.addQueuingUser(self,userID=DB.getUserID(self,name),userName=name,
+                                     chargingMode=newMode,requestVol=requestVol,timeOfApplyingNo=datetime.datetime.now())
+    # 修改请求充电量
+    def setRequestVol(self,nameOrID,newVol):
         queryResult = session.query(QueuingUser).filter(
             or_(QueuingUser.userName == nameOrID, QueuingUser.userID == nameOrID)).first()
         if queryResult is None:
             return 0
         else:
-            queryResult.chargingMode = newMode
+            queryResult.requestVol = newVol
             session.add(queryResult)
             session.commit()
             return 1
 
+    '''
     # 修改前面排队车辆数
     def setCarsAhead(self, nameOrID, newCars):
         queryResult = session.query(QueuingUser).filter(
@@ -304,6 +327,7 @@ class DB(object):
             session.add(queryResult)
             session.commit()
             return 1
+    '''
     # 获取有所有排队用户的信息，主要用来调试
     def getAllQueuingUserInfo(self):
         print("所有排队用户信息如下：")
@@ -330,7 +354,14 @@ class DB(object):
             session.add(queryResult)
             session.commit()
             return 1
+    # 获得等候区大小
+    def getWaitingAreaCapacity(self):
+        queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
 
+        if queryResult is None:
+            return 0
+        else:
+            return queryResult.waitingAreaCapacity
     # 设置快充桩数
     def setQuickChargeNumber(self, newNumber):
         queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
@@ -343,6 +374,15 @@ class DB(object):
             for i in range(newNumber - queryResult.quickChargeNumber):
                 DB.addPile(self,kind="F")
             return 1
+
+    # 获得快充桩数
+    def getQuickChargeNumber(self):
+        queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
+        if queryResult is None:
+             return 0
+        else:
+            return queryResult.quickChargeNumber
+
 
     # 快充数加一
     def addQuickChargeNumber(self):
@@ -368,6 +408,13 @@ class DB(object):
                 DB.addPile(self,kind="T")
             return 1
 
+    # 获得慢充桩数
+    def getSlowChargeNumber(self):
+        queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
+        if queryResult is None:
+            return 0
+        else:
+            return queryResult.slowChargeNumber
     # 慢充数加一
     def addSlowChargeNumber(self):
         queryRessult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
@@ -389,7 +436,13 @@ class DB(object):
             session.add(queryResult)
             session.commit()
             return 1
-
+    # 获得快充功率
+    def getQuickChargePower(self):
+        queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
+        if queryResult is None:
+            return 0
+        else:
+            return queryResult.quickChargePower
     # 设置慢充功率
     def setSlowChargePower(self, newPower):
         queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
@@ -401,6 +454,13 @@ class DB(object):
             session.commit()
             return 1
 
+    # 获得慢充功率
+    def getSlowChargePower(self):
+        queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
+        if queryResult is None:
+            return 0
+        else:
+            return queryResult.slowChargePower
     # 设置每个充电桩的车位数
     def setParkingSpace(self, newSpace):
         queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
@@ -412,8 +472,16 @@ class DB(object):
             session.commit()
             return 1
 
+    # 获得每个充电桩的车位数
+    def getParkingSpace(self):
+        queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
+        if queryResult is None:
+            return 0
+        else:
+            return queryResult.parkingSpaceOfChargePile
+
     # 表四相关
-    # 添加心的详单
+    # 添加新的详单
     def addOrder(self, userID, userName):
         if DB.getUserInfo(self, nameOrID=userID) is None or DB.getUserInfo(self, nameOrID=userName) is None:
             return 0
@@ -599,14 +667,13 @@ class DB(object):
 
     # 表六相关
     # 最开始的实时电量为车辆的初始电量
-    def addServingCarInfo(self, pileID, userID, carVol, requestVol, startVol):
+    def addServingCarInfo(self, pileID, userID, carVol):
         if DB.getPileInfo(self, chargePileID=pileID) is None:
             return 0
         if DB.getUserInfo(self, nameOrID=userID) is None:
             return -1
 
-        newServingCar = ServingCarInfoOfPile(pileID=pileID, userID=userID, carVol=carVol, requestVol=requestVol,
-                                             realVol=startVol)
+        newServingCar = ServingCarInfoOfPile(pileID=pileID, userID=userID, carVol=carVol)
         try:
             session.add(newServingCar)
             session.commit()
@@ -623,7 +690,7 @@ class DB(object):
 
         return json.loads(requestResult.__repr__())
 
-
+    '''
     # 添加排队时长
     def addQueueTime(self, pileID, userID, timeToAdd):
         requestResult = session.query(ServingCarInfoOfPile).filter(
@@ -671,9 +738,10 @@ class DB(object):
             session.add(requestResult)
             session.commit()
             return 1
-
+    '''
+    '''
     # 修改请求充电量
-    def setRequestVol(self, pileID, userID, newRequestVol):
+    def setRequestVolInServingCar(self, pileID, userID, newRequestVol):
         requestResult = session.query(ServingCarInfoOfPile).filter(
             and_(ServingCarInfoOfPile.chargePileId == pileID, ServingCarInfoOfPile.userID == userID)).first()
         if requestResult is None:
@@ -683,7 +751,7 @@ class DB(object):
             session.add(requestResult)
             session.commit()
             return 1
-
+    '''
     # 删除服务车辆信息
     def deleteServingCarInfo(self, pileID, userID):
         queryResult = session.query(ServingCarInfoOfPile).filter(

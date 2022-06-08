@@ -15,6 +15,7 @@ def testUser():
     if id == -1:
         print("已有同名用户")
 
+
     print(db.getUserInfo(nameOrID="小明").get("id"))
     '''
     r = db.getUserInfo(nameOrID="小明")
@@ -24,6 +25,9 @@ def testUser():
         print(type(r.get("id")))
         print(r)
     '''
+    #id = db.getUserInfo(nameOrID="小明").get("id")
+
+
     '''
     id = 4
     # id = 1
@@ -37,8 +41,8 @@ testUser()
 
 # 测试排队用户，对应表一
 def testQueuingUser():
-    # db.deleteQueuingUser(nameOrID=1)
-    r = db.addQueuingUser(userID=1, userName="小明", chargingMode="T", carsAhead=0,
+    db.deleteQueuingUser(nameOrID=1)
+    r = db.addQueuingUser(userID=1, userName="小明", chargingMode="T", requestVol=10,
                           timeOfApplyingNo=datetime.datetime.now())
     if r == 0:
         print("不存在该用户")
@@ -49,49 +53,48 @@ def testQueuingUser():
     else:
         print(db.getQueuingUserInfo(nameOrID=1))
 
-    db.getAllQueuingUserInfo()
-    '''
-    print(db.getQueuingUserInfo(nameOrID=1))
-    r = db.setChargeMode(nameOrID=1, newMode="T")
-    if r ==-1:
-        print("充电模式有误")
-    elif r ==0:
-        print("无对应排队信息")
+    r = db.setChargeMode(name="小明",newMode="F") # 改变充电模式会产生新的排队信息
+    if r == 0:
+        print("不存在该用户")
+    elif r == -1:
+        print('充电模式有误，只能是“T"或"F"')
+    elif r == -2:
+        print("这个用户已有排队信息")
+    elif r == -3:
+        print("模式和原来的一样")
     else:
         print(db.getQueuingUserInfo(nameOrID=1))
-    '''
-    '''
-    print(db.getQueuingUserInfo(nameOrID=1))
-    r = db.setCarsAhead(nameOrID=1, newCars=10)
-    if r == -1:
-        print("充电模式有误")
-    elif r == 0:
-        print("无对应排队信息")
-    else:
-        print(db.getQueuingUserInfo(nameOrID=1))
-    '''
-    '''
-    r = db.getQueuingUserInfo(nameOrID=1)
-    if r is None:
-        print("不存在该用户的排队信息")
-    else:
-        print(r)
 
+    # db.getAllQueuingUserInfo()
 
-    r = db.deleteQueuingUser(nameOrID=1)
-    if r ==0:
-        print("不存在该用户的排队信息")
-    '''
 
 
 # 测试设备相关的，对应表二
 def testEquipment():
-
+    '''
     r = db.getEquipmentInfo()
     if r is None:
         print("未调用init")
     else:
         print(r)
+    '''
+    r = db.getParkingSpace()
+    if r == 0:
+        print("未调用init")
+    else:
+        print(r)
+    db.setParkingSpace(20)
+    print(db.getParkingSpace())
+
+    '''
+    r = db.getWaitingAreaCapacity()
+    if r == 0:
+        print("未调用init")
+    else:
+        print(r)
+    db.setWaitingAreaCapacity(10)
+    print(db.getWaitingAreaCapacity())
+    '''
     '''
     r = db.setWaitingAreaCapacity(newCapacity=10)
     if r == 0:
@@ -110,7 +113,7 @@ def testEquipment():
     db.getAllPileInfo()
     db.getAllReportInfo()
     '''
-
+    '''
     r = db.setSlowChargeNumber(newNumber=12)
     if r == 0:
         print("未调用init")
@@ -120,7 +123,7 @@ def testEquipment():
         print(db.getEquipmentInfo())
     db.getAllPileInfo()
     db.getAllReportInfo()
-
+    '''
     '''
     r = db.addQuickChargeNumber()
     if r == 0:
@@ -360,7 +363,7 @@ def testServingCar():
     else:
         print(r)
 
-    r = db.addServingCarInfo(pileID=1, userID=1, carVol=100, requestVol=40, startVol=60)
+    r = db.addServingCarInfo(pileID=1, userID=1, carVol=100)
     if r == 0:
         print("不存在对应的充电桩")
     elif r == -1:
@@ -444,7 +447,7 @@ if __name__ == "__main__":
     # testReport()
     # testPile()
     testUser()
-    #testQueuingUser()
+    # testQueuingUser()
     # testEquipment()
 
     # testjson()
@@ -456,16 +459,17 @@ def testjson():
     t = {"broken": True}
     s = json.dumps(t)
     print(s)
-
+    '''
     t = '{"broken":"True"}'
     s = json.loads(t)
     print(s)
-
+    '''
+    '''
     if s.get("broken") == "True":
         s["broken"] = True
     print(type(s.get("broken")))
     '''
-
+    '''
     d = '{"id":123,"name":"xiaoming"}' # 最外层用单引号
 
     r = json.loads(d)
