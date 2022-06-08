@@ -15,7 +15,7 @@ def testUser():
     if id == -1:
         print("已有同名用户")
 
-    db.getAllUserInfo()
+    print(db.getUserInfo(nameOrID="小明").get("id"))
     '''
     r = db.getUserInfo(nameOrID="小明")
     if r is None:
@@ -33,7 +33,7 @@ def testUser():
     else:
         print(r)
     '''
-
+testUser()
 
 # 测试排队用户，对应表一
 def testQueuingUser():
@@ -442,8 +442,8 @@ if __name__ == "__main__":
     # testServingCar()
     # testPile()
     # testReport()
-    testPile()
-    # testUser()
+    # testPile()
+    testUser()
     #testQueuingUser()
     # testEquipment()
 
