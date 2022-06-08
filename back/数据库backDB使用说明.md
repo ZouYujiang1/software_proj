@@ -1,4 +1,3 @@
-
 # 数据库backDB使用说明
 
 在添加新的充电桩时，自动增加对应类型的充电桩的数量，同时生成对应充电桩id的报表
@@ -21,6 +20,10 @@
 3. 获取所有用户信息，主要用来调试
 
    方法：getAllUserInfo()，打印所有用户信息
+   
+4. 根据用户名返回用户id
+
+   方法：getUserID(name),成功返回对应的id，失败返回-1（不存在该用户）
 
 ## 三.设备相关，对应表二
 
@@ -39,39 +42,63 @@
 
    方法：setWaitingAreaCapacity(newCapacity)，成功返回1，失败返回0（没有调用init)
 
-3. 设置快充桩数，只支持数量比原来的大
+3. 获得等候区大小
+
+   方法：getWaitingAreaCapacity()，成功返回等候区大小，失败返回0
+
+4. 设置快充桩数，只支持数量比原来的大
 
    方法：setQuickChargeNumber(newNumber)，成功返回1，失败返回0或-1，0表示没有调用init，-1表示新的number比原来的小
+
+5. 获得快充桩数
+
+   方法：getQuickChargeNumber（），成功返回快充桩数，失败返回0
 
 4. 快充桩数加一（在加入新的快充桩的时候，数据库自己处理这个）
 
    方法：addQuickChargeNumber()，成功返回1，失败返回0（没用调用init)
 
-5. 设置慢充桩数，只支持数量比原来的大
+7. 设置慢充桩数，只支持数量比原来的大
 
    方法：setSlowChargeNumber(newNumber)，成功返回1，失败返回0或-1,0表示没用调用init，-1表示新的number比原来的小
+
+8. 获得慢充桩数
+
+   方法：getSlowChargeNumber()，失败返回0，成功返回快充桩数
 
 6. 慢充桩数加一（在加入新的慢充桩的时候，数据库自己处理这个）
 
    方法：addSlowChargeNumber()，成功返回1，失败返回0（没用调用init)
 
-7. 设置快充功率
+10. 设置快充功率
 
    方法：setQuickChargePower(newPower)，成功返回1，失败返回0（没用调用init)
 
-8. 设置慢充功率
+11. 获得快充功率
 
-   方法：setSlowChargePower(newPower)，成功返回1，失败返回0（没用调用init)
+    方法：getQuickChargePower()，成功返回快充功率，失败返回0
+
+12. 设置慢充功率
+
+    方法：setSlowChargePower(newPower)，成功返回1，失败返回0（没用调用init)
+
+13. 获得慢充功率
+
+    方法：getSlowChargePower()，成功否返回慢充哦功率，失败返回0
 
 9. 设置每个充电桩车位数（充电区的）
 
    方法：setParkingSpace(newSpace)，成功返回1，失败返回0（没用调用init)
+   
+15. 获取每个充电桩的车位数
+
+    方法：getParkingSpace()，成功返回车位数，失败返回0
 
 ## 四.排队用户相关，对应表一
 
 1. 添加新的排队用户信息
 
-   方法：addQueuingUser(userID, userName, chargingMode, carsAhead, timeOfApplyingNo)，成功返回新的排队号，失败返回-1或0或-2，-1表示充电模式有误（不是‘T’和‘F'),0表示不存在该用户（用户id或名字出错），-2表示重复插入同一个用户的排队信息
+   方法：addQueuingUser(userID, userName, chargingMode, requestVol, timeOfApplyingNo)，成功返回新的排队号，失败返回-1或0或-2，-1表示充电模式有误（不是‘T’和‘F'),0表示不存在该用户（用户id或名字出错），-2表示重复插入同一个用户的排队信息
 
 2. 获取排队用户的信息
 
@@ -81,20 +108,20 @@
    - name，用户名字
    - mode，充电模式
    - No，充电号
-   - cars，之前的车辆数
+   - requestVol，请求充电量
    - applyTime，申请号码的时间（字符串型）
 
-3. 删除排队用户信息（充电结束时删除）
+3. 删除排队用户信息（开始充电时即可删除）
 
    方法：deleteQueuingUser(nameOrID)，成功返回1，失败返回0（不存在用户的信息）
    
 4. 改变充电模式
 
-   方法：setChargeMode(nameOrID,newMode)，成功返回1，失败返回-1或0，-1表示充电模式有误，0表示无对应的排队信息
+   方法：setChargeMode(name,newMode)，成功返回新的排队号（更改模式会重新生成新的排队信息，见详细设计），失败返回-1或0或-3，-1表示充电模式有误，0表示无对应的排队信息，-3表示新的模式和原来的一样
 
-5. 修改前面排队车辆数
+5. 修改请求充电量
 
-   方法：setCarsAhead(nameOrID,newCars)，成功返回1，失败返回0
+   方法：setRequestVol(nameOrID,newVol)，成功返回1，失败返回0
 
 5. 获取所有的排队用户的信息，主要用来调试
 
@@ -199,7 +226,7 @@
 
 1. 添加等候服务车辆信息
 
-   方法：addServingCarInfo(pileID, userID, carVol, requestVol, startVol)，carVol车辆总的电池容量，startVol，为开始充电的时候车辆的电量。成功返回1，失败返回0或-1或-2,0表示不存在对应的充电桩，-1表示不存在对应的用户，-2表示重复插入（同一个充电桩，同一个用户）
+   方法：addServingCarInfo(pileID, userID, carVol)，carVol车辆总的电池容量，成功返回1，失败返回0或-1或-2,0表示不存在对应的充电桩，-1表示不存在对应的用户，-2表示重复插入（同一个充电桩，同一个用户）
 
 2. 获取某个充电桩等候服务的车辆信息
 
@@ -209,28 +236,6 @@
    - userID 用户id
    - carVol 车辆总电量
    - requestVol 请求电量
-   - queueTime 排队时长
-   - realVol 实时电量
-
-3. 添加排队时长
-
-   方法：addQueueTime( pileID, userID, timeToAdd)，成功返回1，失败返回0(不存在服务信息)
-
-4. 设置排队时长
-
-   方法：setQueueTime(pileID, userID, newQueueTime)，成功返回1，失败返回0
-
-5. 添加实时电量
-
-   方法：addRealVol(pileID, userID, volToAdd)，成功返回1，失败返回0
-
-6. 设置实时电量
-
-   方法：setRealVol(pileID, userID, newRealVol)，成功返回1，失败返回0
-
-7. 修改请求充电量
-
-   方法：setRequestVol(pileID,userID,newRequestVol)，成功返回1，失败返回0
 
 8. 删除充电桩服务车辆信息（应该在充电结束时，适时删除，不需要这个信息的时候）
 
@@ -286,81 +291,86 @@
 
 ## 九.一些说明
 
-
-
 1. 由于删除充电桩比较麻烦，所以只支持添加新的充电桩，故设置快充和慢充的数量时，新的数量应比原来的大
-
 2. 上层应尽量做正确的操作，不清楚返回值的时候打印看一下，对应说明文档
-
 3. 充电桩报表在添加充电桩时自动添加，不用上层调用，同时自动添加对应的快充或慢充桩的数量（加一），也不用上层调用
-
 4. 部分初始值是没有意义的
 
-5. 名字未换成前端需要的
+## 十.一些信息的添加和删除的时刻
 
-   
+1. 添加用户信息在注册的时候
+2. 添加服务车辆信息在开始充电时（或进入充电区）
+3. 删除排队信息在添加新的服务车辆信息之后（或修改充电模式时，这个数据库自己处理）
+4. 添加排队信息在进入等候区时
+5. 添加充电详单在开始充电时，结束时更新
+6. 删除订单在打印订单之后
+7. 删除服务车辆信息在结束充电时
 
-   
 
-   
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
 
-   
+ 
+
+ 
+
+ 
+
+ 
 
 
 
