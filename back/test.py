@@ -15,13 +15,8 @@ def testUser():
     if id == -1:
         print("已有同名用户")
 
-    print(db.getUserID(name="小"))
-    '''
-    usrName = "小明"
-    id = db.getUserInfo(usrName)["id"]
-    return json.dumps({"queno":id})
-    '''
-    # db.getAllUserInfo()
+
+    print(db.getUserInfo(nameOrID="小明").get("id"))
     '''
     r = db.getUserInfo(nameOrID="小明")
     if r is None:
@@ -42,7 +37,7 @@ def testUser():
     else:
         print(r)
     '''
-
+testUser()
 
 # 测试排队用户，对应表一
 def testQueuingUser():
@@ -451,8 +446,8 @@ if __name__ == "__main__":
     # testPile()
     # testReport()
     # testPile()
-    # testUser()
-    testQueuingUser()
+    testUser()
+    # testQueuingUser()
     # testEquipment()
 
     # testjson()
