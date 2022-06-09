@@ -3,3 +3,5 @@ env/
 
 # ./back/
 back/__*__
+
+.DS_Store
