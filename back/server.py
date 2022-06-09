@@ -1,4 +1,5 @@
 from cgitb import text
+from crypt import methods
 from datetime import datetime
 import json
 from tabnanny import check
@@ -26,7 +27,7 @@ def printAllTestURL():
     print(urlTestList)
     return urlTestList
 
-@app.route("/usr/logon")
+@app.route("/usr/logon", methods=['POST'])
 def usrLogon():
     name = request.args['name']
     password = request.args['password']
@@ -80,7 +81,6 @@ def usrGetQueueNo():
     usrID = db.getUserInfo(usrName).get('id')
     queueNo = db.addQueuingUser(usrID, chargingMode, carsAhead, timeOfApplyingNo)
     return json.dumps({'queueNo' : queueNo})
-
 
 @app.route("/admin/usr-info")
 def adminUsrInfo():
