@@ -102,7 +102,7 @@
 
 2. 获取排队用户的信息
 
-   方法:getQueuingUserImfo(nameOrID)，失败返回None,成功以json格式返回以下字段
+   方法:getQueuingUserInfo(nameOrID)，失败返回None,成功以json格式返回以下字段
 
    - id，用户id
    - name，用户名字
@@ -243,7 +243,7 @@
    
 9. 获取所有等候服务的车辆信息
 
-   方法：getAllServingCarInfo（），简单打印
+   方法：getAllServingCarInfo()，简单打印
 
 
 
@@ -285,7 +285,7 @@
 
 6. 获取所有订单信息
 
-   方法：getAllOrderInfo（），简单打印
+   方法：getAllOrderInfo()，简单打印
 
    
 
