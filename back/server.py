@@ -29,16 +29,28 @@ def printAllTestURL():
 
 @app.route("/usr/logon", methods=['POST'])
 def usrLogon():
-    name = request.args['name']
-    password = request.args['password']
-
+    name = request.json['name']
+    password = request.json['password']
     id = db.addUser(name,password)
     return json.dumps({'id':id})
 
-@app.route("/usr/login")
+@app.route("/usr/unsubscrib", methods=['POST'])
+def usrUnsubscrib():
+    name = request.json['name']
+    password = request.json['password']
+    # checkResult成功时返回id，失败时返回0或-1
+    checkResult = db.checkUserPwd(name, password)
+    if checkResult > 0:
+        return json.dumps('Your account: '+ str(db.deleteUser(name)) +' has been delete now.')
+    elif checkResult == 0:
+        return json.dumps({'status':'Password Error', 'id':0})
+    else:
+        return json.dumps({'status':'UsrId Not Found','id':-1})
+
+@app.route("/usr/login", methods=['POST'])
 def usrLogin():
-    name = request.args['name']
-    password = request.args['password']
+    name = request.json['name']
+    password = request.json['password']
 
     # checkResult成功时返回id，失败时返回0或-1
     checkResult = db.checkUserPwd(name, password)
@@ -49,19 +61,19 @@ def usrLogin():
     else:
         return json.dumps({'status':'UsrId Not Found','id':-1})
 
-@app.route("/usr/resetpwd")
+@app.route("/usr/resetpwd", methods=['POST'])
 def usrResetPWD():
-    name = request.args['name']
-    password = request.args['password']
+    name = request.json['name']
+    password = request.json['password']
 
     # checkResult成功时返回id，失败时返回-1
     checkResult = db.resetUserPwd(name, password)
     return json.dumps({'id':checkResult})
 
-@app.route("/usr/personal")
+@app.route("/usr/personal", methods=['POST'])
 def usrPersonal():
-    name = request.args['name']
-    password = request.args['password']
+    name = request.json['name']
+    password = request.json['password']
 
     # checkResult成功时返回id，失败时返回-1
     checkResult = db.checkUserPwd(name, password)
@@ -70,21 +82,53 @@ def usrPersonal():
     else:
         return json.dumps({'id':-1,'status':'UsrId or UsrName Not Found'})
 
-@app.route("/usr/getQueueNo")
+@app.route("/usr/getqueueno", methods=['POST'])
 def usrGetQueueNo():
-    usrName = request.args['name']
-    chargingMode = request.args['chargingMode']
+    usrName = request.json['name']
+    chargingMode = request.json['chargingMode']
+    requestVol = request.json['requestVol']
 
     timeOfApplyingNo = datetime.now()
-    carsAhead = 0;
     # print(db.getUserInfo(usrName))
     usrID = db.getUserInfo(usrName).get('id')
-    queueNo = db.addQueuingUser(usrID, chargingMode, carsAhead, timeOfApplyingNo)
+    queueNo = db.addQueuingUser(usrID, usrName, chargingMode, requestVol, timeOfApplyingNo)
     return json.dumps({'queueNo' : queueNo})
 
-@app.route("/admin/usr-info")
+@app.route("/admin/usr-info", methods=['POST'])
 def adminUsrInfo():
-    return str(db.getAllUserInfo())
+    return json.dumps(str(db.getAllUserInfo()))
+
+@app.route("/admin/charger/status", methods=['POST'])
+def adminGetChargerStatus():
+    return json.dumps(str(db.getAllPileInfo()))
+
+@app.route("/admin/charger/service", methods=['POST'])
+def adminGetChargerService():
+    return json.dumps(str(db.getAllServingCarInfo()))
+
+@app.route("/admin/charger/statistic", methods=['POST'])
+def adminGetChargerStatistic():
+    return json.dumps(str(db.getAllReportInfo()))
+
+@app.route("/admin/charger/open", methods=['POST'])
+def adminChargeTurnOn():
+    chargerID = request.json['chargerID']
+    return str(db.turnOnPile(chargerID))
+
+@app.route("/admin/charger/close", methods=['POST'])
+def adminChargeTurnOff():
+    chargerID = request.json['chargerID']
+    return str(db.turnOffPile((chargerID)))
+
+@app.route("/admin/charger/break", methods=['POST'])
+def adminChargeBreak():
+    chargerID = request.json['chargerID']
+    return str(db.setPileBroken(chargerID))
+
+@app.route("/admin/charger/fix", methods=['POST'])
+def adminChargeFix():
+    chargerID = request.json['chargerID']
+    return str(db.setPileWork(chargerID))
 
 if __name__ == '__main__':
     app.run(port='5000')
