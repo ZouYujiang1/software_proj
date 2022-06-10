@@ -194,11 +194,19 @@ class DB(object):
     def addUser(self, name, password):
         if session.query(User).filter(User.name == name).first() is not None:
             return -1  # -1表示加入失败，有相同的用户名
-
         newUser = User(name=name, password=password)
         session.add(newUser)
         session.commit()
         return newUser.id  # 返回新加入的用户的id
+
+    # 删除用户信息
+    def deleteUser(self, userNameOrID):
+        queryResult = session.query(User).filter(
+        or_(User.id == userNameOrID, User.name == userNameOrID))
+        for r in queryResult:
+            session.delete(r)
+        session.commit()
+        return userNameOrID
 
     # 获取用户信息
     def getUserInfo(self, nameOrID):
@@ -244,14 +252,13 @@ class DB(object):
 
     # 表一相关
     # 添加排队的用户,成功返回userid,失败返回-1
-    def addQueuingUser(self, userID, userName, chargingMode,requestVol, timeOfApplyingNo):
+    def addQueuingUser(self, userID, userName, chargingMode, requestVol, timeOfApplyingNo):
         # 模式有误
         if chargingMode != 'F' and chargingMode != 'T':
             return -1
         # 不存在该用户
         if DB.getUserInfo(self, nameOrID=userID) is None or DB.getUserInfo(self, nameOrID=userName) is None:
             return 0
-
         # 重复插入
         if DB.getQueuingUserInfo(self,nameOrID=userID) is not None:
             return -2
@@ -334,6 +341,7 @@ class DB(object):
         query_result = session.query(QueuingUser).all()
         for result in query_result:
             print(result)
+        return query_result
 
     # 表二相关
     # 获取设备信息
@@ -664,6 +672,7 @@ class DB(object):
         query_result = session.query(ChargePileInfo).all()
         for result in query_result:
             print(result)
+        return query_result
 
     # 表六相关
     # 最开始的实时电量为车辆的初始电量
@@ -769,6 +778,7 @@ class DB(object):
         query_result = session.query(ServingCarInfoOfPile).all()
         for result in query_result:
             print(result)
+        return query_result
 
     # 表七相关
     # 添加报表
@@ -867,6 +877,7 @@ class DB(object):
             query_result = session.query(ReportOfPile).all()
             for result in query_result:
                 print(result)
+            return query_result
 
     # 初始化一些设备的常量
     def init(self):
