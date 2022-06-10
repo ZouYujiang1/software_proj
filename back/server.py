@@ -61,6 +61,7 @@ def usrLogin():
     else:
         return json.dumps({'status':'UsrId Not Found','id':-1})
 
+# TODO:是否有必要增加一个在线列表？
 @app.route("/usr/resetpwd", methods=['POST'])
 def usrResetPWD():
     name = request.json['name']
@@ -87,10 +88,11 @@ def usrGetQueueNo():
     usrName = request.json['name']
     chargingMode = request.json['chargingMode']
     requestVol = request.json['requestVol']
-
     timeOfApplyingNo = datetime.now()
-    # print(db.getUserInfo(usrName))
-    usrID = db.getUserInfo(usrName).get('id')
+    usrInfo = db.getUserInfo(usrName)
+    if usrInfo is None:
+        return json.dumps('The User: ' + str(usrName) + ' didn`t logon.')
+    usrID = usrInfo['id']
     usrQueueNo = db.addQueuingUser(usrID, usrName, chargingMode, requestVol, timeOfApplyingNo)
     return json.dumps({'queueNo' : usrQueueNo})
 
