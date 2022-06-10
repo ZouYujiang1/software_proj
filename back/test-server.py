@@ -12,6 +12,12 @@ def testUsrInfo():
     res = requests.post(url=url, json=json)
     print(res.json())
 
+def testQueuingUsrInfo():
+    url = 'http://127.0.0.1:5000/admin/queue-info'
+    json = { "chargerID" : 1 }
+    res = requests.post(url=url, json=json)
+    print(res.json())
+
 def testChargersStatus():
     url = 'http://127.0.0.1:5000/admin/charger/status'
     json = { "chargerID" : 1 }
@@ -54,6 +60,7 @@ def testChargeFix():
     res = requests.post(url=url, json=json)
     print(res.json())
 
+testQueuingUsrInfo()
 testGetQueueNo()
 testUsrInfo()
 testChargersStatus()

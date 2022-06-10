@@ -91,12 +91,16 @@ def usrGetQueueNo():
     timeOfApplyingNo = datetime.now()
     # print(db.getUserInfo(usrName))
     usrID = db.getUserInfo(usrName).get('id')
-    queueNo = db.addQueuingUser(usrID, usrName, chargingMode, requestVol, timeOfApplyingNo)
-    return json.dumps({'queueNo' : queueNo})
+    usrQueueNo = db.addQueuingUser(usrID, usrName, chargingMode, requestVol, timeOfApplyingNo)
+    return json.dumps({'queueNo' : usrQueueNo})
 
 @app.route("/admin/usr-info", methods=['POST'])
 def adminUsrInfo():
     return json.dumps(str(db.getAllUserInfo()))
+
+@app.route("/admin/queue-info", methods=['POST'])
+def adminQueuingUserInfo():
+    return json.dumps(str(db.getAllQueuingUserInfo()))
 
 @app.route("/admin/charger/status", methods=['POST'])
 def adminGetChargerStatus():

@@ -259,7 +259,6 @@ class DB(object):
         # 不存在该用户
         if DB.getUserInfo(self, nameOrID=userID) is None or DB.getUserInfo(self, nameOrID=userName) is None:
             return 0
-
         # 重复插入
         if DB.getQueuingUserInfo(self,nameOrID=userID) is not None:
             return -2
@@ -342,6 +341,7 @@ class DB(object):
         query_result = session.query(QueuingUser).all()
         for result in query_result:
             print(result)
+        return query_result
 
     # 表二相关
     # 获取设备信息
