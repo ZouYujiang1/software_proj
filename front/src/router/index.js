@@ -11,7 +11,7 @@ const routes = [
     name: 'Login',
     component: () => import('../views/Login.vue')
   },{
-    path: '/charger/:id',
+    path: '/charger',
     name: 'Charger',
     component: () => import('../views/Charger.vue'),
     children: [

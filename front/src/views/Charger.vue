@@ -9,17 +9,17 @@
         <table border="0" align="center" style="height:200px">
           <tr>
             <td>
-              <router-link :to="{name: 'Ch_status', params:{'id': this.current.id}}" >充电桩状态</router-link>
+              <router-link :to="{name: 'Ch_status'}" >充电桩状态</router-link>
             </td>
           </tr>
           <tr>
             <td>
-              <router-link :to="{name: 'Ch_service', params:{'id': this.current.id}}" >服务车辆信息</router-link>
+              <router-link :to="{name: 'Ch_service'}" >服务车辆信息</router-link>
             </td>
           </tr>
           <tr>
             <td>
-              <router-link :to="{name: 'Ch_statistic', params:{'id': this.current.id}}" >累计数据报表</router-link>
+              <router-link :to="{name: 'Ch_statistic'}" >累计数据报表</router-link>
             </td>
           </tr>
 
@@ -44,7 +44,8 @@ export default {
   data(){
     return {
       message: 'test',
-      current: {'id': 0}
+      current: '',
+
     }
   },
   methods :{
@@ -57,12 +58,21 @@ export default {
         .then(function (response){
           vm.message = response;
           vm.current = response[0];
-          router.push({name: 'Ch_status', params:{'id': 1}})
+          console.log('Charger')
+          router.push({name: 'Ch_status'})
         })
         .catch(function (error) { // 请求失败处理
           console.log(error);
         });
   },
+  computed:{
+    id(){
+      const route = useRoute()
+      console.log(route.params.id)
+      return route.params.id
+    }
+  },
+
   updated() {
 
   }
