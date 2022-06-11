@@ -21,6 +21,7 @@ def testUser():
 
     print(db.getUserInfo(nameOrID="小"))
 
+
     '''
     r = db.getUserInfo(nameOrID="小明")
     if r is None:
