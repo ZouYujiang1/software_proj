@@ -1,17 +1,23 @@
 <template>
 
-
-</template>
+ </template>
 
 <script>
+import screenfull from 'screenfull'
+
 export default {
+  name: "Login",
   data() {
     return {
       src: ''
     }
   },
   mounted() {
-    window.location.href = "../login.html"
+    self.location.href = "../login.html"
+
+  },
+  setup() {
+
   }
 }
 

@@ -7,6 +7,7 @@ import 'element-plus/dist/index.css'
 import axios from 'axios'
 import "./axios"
 import $ from 'jquery'
+import SuiVue from 'semantic-ui-vue'
 
 import Particles from 'particles.vue3'
 const app=createApp(App)
@@ -16,6 +17,6 @@ app.use(store)
     .use(router)
     .use(ElementPlus)
 
-
+    .use(SuiVue)
     .use(Particles)
     .mount('#app')

@@ -1,5 +1,5 @@
 from cgitb import text
-from crypt import methods
+# from crypt import methods
 from datetime import datetime
 import json
 from tabnanny import check
@@ -14,18 +14,20 @@ db = DB()
 db.init()
 app = Flask(__name__)
 
+
 @app.route("/")
 def printAllTestURL():
     urlTestList = '{'
-    urlTestList += '\nusrLogon: ' + request.url + url_for('usrLogon',name='Jackie',password='114514')
-    urlTestList += '\nusrLogin: ' + request.url + url_for('usrLogin',name='Jackie',password='114514')
-    urlTestList += '\nusrResetPWD: ' + request.url + url_for('usrResetPWD',name='Jackie',password='114514')
-    urlTestList += '\nusrPersonal: ' + request.url + url_for('usrPersonal',name='Jackie',password='114514')
-    urlTestList += '\nusrGetQueueNo: ' + request.url + url_for('usrGetQueueNo',name='Jackie',chargingMode='F')
+    urlTestList += '\nusrLogon: ' + request.url + url_for('usrLogon', name='Jackie', password='114514')
+    urlTestList += '\nusrLogin: ' + request.url + url_for('usrLogin', name='Jackie', password='114514')
+    urlTestList += '\nusrResetPWD: ' + request.url + url_for('usrResetPWD', name='Jackie', password='114514')
+    urlTestList += '\nusrPersonal: ' + request.url + url_for('usrPersonal', name='Jackie', password='114514')
+    urlTestList += '\nusrGetQueueNo: ' + request.url + url_for('usrGetQueueNo', name='Jackie', chargingMode='F')
     urlTestList += '\nadminUsrInfo: ' + request.url + url_for('adminUsrInfo')
     urlTestList += '\n}'
     print(urlTestList)
     return urlTestList
+
 
 @app.route("/usr/logon", methods=['POST'])
 def usrLogon():
@@ -33,6 +35,9 @@ def usrLogon():
     password = request.json['password']
     id = db.addUser(name,password)
     return json.dumps({'id':id})
+
+
+
 
 @app.route("/usr/unsubscrib", methods=['POST'])
 def usrUnsubscrib():
@@ -55,11 +60,12 @@ def usrLogin():
     # checkResult成功时返回id，失败时返回0或-1
     checkResult = db.checkUserPwd(name, password)
     if checkResult > 0:
-        return json.dumps({'status':'UsrId OnLine Now', 'id':checkResult})
+        return json.dumps({'status': 'UsrId OnLine Now', 'id': checkResult})
     elif checkResult == 0:
-        return json.dumps({'status':'Password Error', 'id':0})
+        return json.dumps({'status': 'Password Error', 'id': 0})
     else:
-        return json.dumps({'status':'UsrId Not Found','id':-1})
+        return json.dumps({'status': 'UsrId Not Found', 'id': -1})
+
 
 # TODO:是否有必要增加一个在线列表？
 @app.route("/usr/resetpwd", methods=['POST'])
@@ -69,7 +75,8 @@ def usrResetPWD():
 
     # checkResult成功时返回id，失败时返回-1
     checkResult = db.resetUserPwd(name, password)
-    return json.dumps({'id':checkResult})
+    return json.dumps({'id': checkResult})
+
 
 @app.route("/usr/personal", methods=['POST'])
 def usrPersonal():
@@ -81,7 +88,8 @@ def usrPersonal():
     if checkResult > 0:
         return db.getUserInfo(name)
     else:
-        return json.dumps({'id':-1,'status':'UsrId or UsrName Not Found'})
+        return json.dumps({'id': -1, 'status': 'UsrId or UsrName Not Found'})
+
 
 @app.route("/usr/getqueueno", methods=['POST'])
 def usrGetQueueNo():
@@ -89,12 +97,15 @@ def usrGetQueueNo():
     chargingMode = request.json['chargingMode']
     requestVol = request.json['requestVol']
     timeOfApplyingNo = datetime.now()
+
     usrInfo = db.getUserInfo(usrName)
     if usrInfo is None:
         return json.dumps('The User: ' + str(usrName) + ' didn`t logon.')
     usrID = usrInfo['id']
     usrQueueNo = db.addQueuingUser(usrID, usrName, chargingMode, requestVol, timeOfApplyingNo)
     return json.dumps({'queueNo' : usrQueueNo})
+
+
 
 @app.route("/admin/usr-info", methods=['POST'])
 def adminUsrInfo():
@@ -135,6 +146,7 @@ def adminChargeBreak():
 def adminChargeFix():
     chargerID = request.json['chargerID']
     return str(db.setPileWork(chargerID))
+
 
 if __name__ == '__main__':
     app.run(port='5000')
