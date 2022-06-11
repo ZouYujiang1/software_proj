@@ -1,4 +1,5 @@
 from cgitb import text
+from cmath import pi
 # from crypt import methods
 from datetime import datetime
 import json
@@ -44,6 +45,7 @@ def usrUnsubscrib():
     # checkResult成功时返回id，失败时返回0或-1
     checkResult = db.checkUserPwd(name, password)
     if checkResult > 0:
+        db.deleteQueuingUser(name)
         return json.dumps('Your account: '+ str(db.deleteUser(name)) +' has been delete now.')
     elif checkResult == 0:
         return json.dumps({'status':'Password Error', 'id':0})
@@ -107,9 +109,12 @@ def adminUsrInfo():
 def adminQueuingUserInfo():
     return json.dumps(str(db.getAllQueuingUserInfo()))
 
+# TODO: 获取ReportInfo中的used_times used_minutes used_vol并在此合并返回
 @app.route("/admin/charger/status", methods=['POST', 'GET'])
 def adminGetChargerStatus():
-    return json.dumps(str(db.getAllPileInfo()))
+    reportInfo = db.getAllReportInfo()
+    pileInfo = db.getAllPileInfo()
+    return json.dumps(str({'allReportInfo' : reportInfo, 'allPileInfo' : pileInfo}))
 
 @app.route("/admin/charger/service", methods=['POST', 'GET'])
 def adminGetChargerService():
