@@ -1,5 +1,6 @@
 from cmath import inf
 import backDB
+from typing import Tuple
 
 
 class UserStatus(object):
@@ -27,7 +28,7 @@ class Dispatcher(object):
         self.avai_fast_charger = 0
         self.charger_down_dispatch_mode = 0
 
-    def carStatus(self, username: str) -> tuple[int, int]:
+    def carStatus(self, username: str) -> Tuple[int, int]:
         """获取车辆状态
 
         Args:
