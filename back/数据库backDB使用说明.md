@@ -11,16 +11,16 @@
 
 1. 添加新用户（主要用于注册时)
 
-   方法:addUser(name, password),添加成功返回新用户的id，失败返回-1，表示已有同名用户
+   方法:addUser(name, password，identity="U"),添加成功返回新用户的id，失败返回-1，表示已有同名用户，默认为普通用户（普通用户不用写identity也行），U表示普通用户，M为管理员
 
 2. 查看用户信息
 
-   方法：getUserInfo(nameOrID)，根据用户名或用户id，查看用户信息，成功以json格式（字典）返回用户的id，name，password，失败返回None(无该用户)
-
+   方法：getUserInfo(nameOrID)，根据用户名或用户id，查看用户信息，成功以json格式（字典）返回用户的id，name，password，identity，失败返回None(无该用户)
+   
 3. 获取所有用户信息，主要用来调试
 
    方法：getAllUserInfo()，打印所有用户信息
-
+   
 4. 根据用户名返回用户id
 
    方法：getUserID(name),成功返回对应的id，失败返回-1（不存在该用户）
@@ -89,7 +89,7 @@
 9. 设置每个充电桩车位数（充电区的）
 
    方法：setParkingSpace(newSpace)，成功返回1，失败返回0（没用调用init)
-
+   
 15. 获取每个充电桩的车位数
 
     方法：getParkingSpace()，成功返回车位数，失败返回0
@@ -102,7 +102,7 @@
 
 2. 获取排队用户的信息
 
-   方法:getQueuingUserInfo(nameOrID)，失败返回None,成功以json格式返回以下字段
+   方法:getQueuingUserImfo(nameOrID)，失败返回None,成功以json格式返回以下字段
 
    - id，用户id
    - name，用户名字
@@ -114,7 +114,7 @@
 3. 删除排队用户信息（开始充电时即可删除）
 
    方法：deleteQueuingUser(nameOrID)，成功返回1，失败返回0（不存在用户的信息）
-
+   
 4. 改变充电模式
 
    方法：setChargeMode(name,newMode)，成功返回新的排队号（更改模式会重新生成新的排队信息，见详细设计），失败返回-1或0或-3，-1表示充电模式有误，0表示无对应的排队信息，-3表示新的模式和原来的一样
@@ -126,6 +126,8 @@
 5. 获取所有的排队用户的信息，主要用来调试
 
    方法：getAllQueuingUserInfo()，简单打印
+
+   
 
 ## 五.充电桩相关，对应表五
 
@@ -139,9 +141,9 @@
 
    - chargePileId 充电桩编号
    - working，开或关（True表示打开）
-   - broken，故障否（True表示故障）
+   -  broken，故障否（True表示故障）
    - serviceLength，当前充电桩的充电区的车辆数
-   - kind，类型，快充或慢充
+   -  kind，类型，快充或慢充
 
 3. 关闭充电桩
 
@@ -166,7 +168,7 @@
 8. 设置充电桩服务车辆数（在充电区排队的），应该主要使用上一个方法
 
    方法：setServicelenOfPile( chargePileID, newLen)，成功返回1，失败返回0或-1,0表示不存在该充电桩，-1表示设置的长度大于最大长度（车位数）
-
+   
 9. 获取所有的充电桩信息
 
    方法：getAllPileInfo()，简单打印
@@ -213,10 +215,12 @@
 8. 添加服务费用
 
    方法：addTotalServiceCost(pileID, costToAdd)，成功返回1，失败返回0
-
+   
 9. 获取所有的报表信息
 
    方法：getAllReportInfo()，简单打印
+
+
 
 ## 七.充电桩服务车辆信息，对应表六
 
@@ -236,10 +240,12 @@
 8. 删除充电桩服务车辆信息（应该在充电结束时，适时删除，不需要这个信息的时候）
 
    方法：deleteServingCarInfo(pileID, userID)，成功返回1，失败返回0(不存在服务信息)
-
+   
 9. 获取所有等候服务的车辆信息
 
-   方法：getAllServingCarInfo()，简单打印
+   方法：getAllServingCarInfo（），简单打印
+
+
 
 ## 八.充电详单，对应表四
 
@@ -279,7 +285,9 @@
 
 6. 获取所有订单信息
 
-   方法：getAllOrderInfo()，简单打印
+   方法：getAllOrderInfo（），简单打印
+
+   
 
 ## 九.一些说明
 
@@ -297,3 +305,82 @@
 5. 添加充电详单在开始充电时，结束时更新
 6. 删除订单在打印订单之后
 7. 删除服务车辆信息在结束充电时
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
