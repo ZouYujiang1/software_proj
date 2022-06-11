@@ -13,6 +13,8 @@
    管理员1，名字：manager1，密码：softwarepwd1
 
    管理员2，名字：manager2，密码：softwarepwd2
+   
+   （管理员名字和密码在const.py里，可以修改）
 
 ## 二.用户相关，对应表三
 
