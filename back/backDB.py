@@ -76,7 +76,7 @@ class User(Base):
     def __repr__(self):
         return '{' + f'"id":{self.id},"name":"{self.name}","password":"{self.password}","identity":"{self.identity}"' + '}'
 
-    def __init__(self, name, password, identity):
+    def __init__(self, name, password, identity="U"):
         self.name = name
         self.password = password
         self.identity = identity
@@ -197,10 +197,10 @@ Base.metadata.create_all()
 class DB(object):
     # 表三相关
     # 添加用户信息，成功则返回刚插入用户的id，失败返回-1
-    def addUser(self, name, password, identity="U"):  # 默认为普通用户
+    def addUser(self, name, password):
         if session.query(User).filter(User.name == name).first() is not None:
             return -1  # -1表示加入失败，有相同的用户名
-        newUser = User(name=name, password=password,identity=identity)
+        newUser = User(name=name, password=password)
         session.add(newUser)
         session.commit()
         return newUser.id  # 返回新加入的用户的id
@@ -911,7 +911,14 @@ class DB(object):
             for i in range(const.SLOW_CHARGE_NUMBER):
                 DB.addPile(self, "T")
 
+            # 初始化管理员信息
+            Manager1 = User(name=const.NAME1, password=const.PWD1,identity="M")
+            session.add(Manager1)
+            session.commit()
 
+            Manager2 = User(name=const.NAME2, password=const.PWD2, identity="M")
+            session.add(Manager2)
+            session.commit()
 if __name__ == "__main__":
     db = DB()
     db.init()
