@@ -1,5 +1,5 @@
 from cgitb import text
-from crypt import methods
+# from crypt import methods
 from datetime import datetime
 import json
 from tabnanny import check
@@ -7,12 +7,15 @@ from unittest import result
 from urllib import response
 from xmlrpc.client import DateTime
 from flask import Flask, make_response, request, session, url_for
+from flask_cors import CORS
 from sqlalchemy import func, true
 from backDB import DB, QueuingUser
 
 db = DB()
 db.init()
 app = Flask(__name__)
+# r'/*' 是通配符，让本服务器所有的 URL 都允许跨域请求
+CORS(app, resources=r'/*')
 
 @app.route("/")
 def printAllTestURL():
@@ -55,11 +58,11 @@ def usrLogin():
     # checkResult成功时返回id，失败时返回0或-1
     checkResult = db.checkUserPwd(name, password)
     if checkResult > 0:
-        return json.dumps({'status':'UsrId OnLine Now', 'id':checkResult})
+        return json.dumps({'status': 'UsrId OnLine Now', 'id':checkResult})
     elif checkResult == 0:
-        return json.dumps({'status':'Password Error', 'id':0})
+        return json.dumps({'status': 'Password Error', 'id':0})
     else:
-        return json.dumps({'status':'UsrId Not Found','id':-1})
+        return json.dumps({'status': 'UsrId Not Found', 'id':-1})
 
 # TODO:是否有必要增加一个在线列表？
 @app.route("/usr/resetpwd", methods=['POST'])
@@ -104,34 +107,34 @@ def adminUsrInfo():
 def adminQueuingUserInfo():
     return json.dumps(str(db.getAllQueuingUserInfo()))
 
-@app.route("/admin/charger/status", methods=['POST'])
+@app.route("/admin/charger/status", methods=['POST', 'GET'])
 def adminGetChargerStatus():
     return json.dumps(str(db.getAllPileInfo()))
 
-@app.route("/admin/charger/service", methods=['POST'])
+@app.route("/admin/charger/service", methods=['POST', 'GET'])
 def adminGetChargerService():
     return json.dumps(str(db.getAllServingCarInfo()))
 
-@app.route("/admin/charger/statistic", methods=['POST'])
+@app.route("/admin/charger/statistic", methods=['POST', 'GET'])
 def adminGetChargerStatistic():
     return json.dumps(str(db.getAllReportInfo()))
 
-@app.route("/admin/charger/open", methods=['POST'])
+@app.route("/admin/charger/open", methods=['POST', 'GET'])
 def adminChargeTurnOn():
     chargerID = request.json['chargerID']
     return str(db.turnOnPile(chargerID))
 
-@app.route("/admin/charger/close", methods=['POST'])
+@app.route("/admin/charger/close", methods=['POST', 'GET'])
 def adminChargeTurnOff():
     chargerID = request.json['chargerID']
     return str(db.turnOffPile((chargerID)))
 
-@app.route("/admin/charger/break", methods=['POST'])
+@app.route("/admin/charger/break", methods=['POST', 'GET'])
 def adminChargeBreak():
     chargerID = request.json['chargerID']
     return str(db.setPileBroken(chargerID))
 
-@app.route("/admin/charger/fix", methods=['POST'])
+@app.route("/admin/charger/fix", methods=['POST', 'GET'])
 def adminChargeFix():
     chargerID = request.json['chargerID']
     return str(db.setPileWork(chargerID))
