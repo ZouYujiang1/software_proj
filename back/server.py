@@ -109,12 +109,9 @@ def adminUsrInfo():
 def adminQueuingUserInfo():
     return json.dumps(str(db.getAllQueuingUserInfo()))
 
-# TODO: 获取ReportInfo中的used_times used_minutes used_vol并在此合并返回
 @app.route("/admin/charger/status", methods=['POST', 'GET'])
 def adminGetChargerStatus():
-    reportInfo = db.getAllReportInfo()
-    pileInfo = db.getAllPileInfo()
-    return json.dumps(str({'allReportInfo' : reportInfo, 'allPileInfo' : pileInfo}))
+    return json.dumps(str(db.getAllPileInfo()))
 
 @app.route("/admin/charger/service", methods=['POST', 'GET'])
 def adminGetChargerService():
