@@ -82,8 +82,9 @@ export default {
     get_data(){
       let vm = this
         axios
-            .get('http://localhost:8081/chargers')
+            .get('http://127.0.0.1:5000/admin/charger/statistic')
             .then(function (response){
+              response = JSON.parse(response)
               vm.message = response;
               vm.current = response[0];
               for(const i in response){
