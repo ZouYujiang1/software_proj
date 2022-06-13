@@ -11,12 +11,17 @@ db = backDB.DB()
 
 # 测试用户部分，对应表三
 def testUser():
-    id = db.addUser(name="小明", password="123456")
+    # 管理员的
+    print(db.getUserInfo(nameOrID=1))
+    print(db.getUserInfo(nameOrID=2))
+
+    id = db.addUser(name="小", password="123456")
     if id == -1:
         print("已有同名用户")
 
+    print(db.getUserInfo(nameOrID="小"))
 
-    print(db.getUserInfo(nameOrID="小明").get("id"))
+
     '''
     r = db.getUserInfo(nameOrID="小明")
     if r is None:
@@ -37,7 +42,7 @@ def testUser():
     else:
         print(r)
     '''
-testUser()
+# testUser()
 
 # 测试排队用户，对应表一
 def testQueuingUser():
