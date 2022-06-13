@@ -111,11 +111,37 @@ def adminQueuingUserInfo():
 
 @app.route("/admin/charger/status", methods=['POST', 'GET'])
 def adminGetChargerStatus():
-    return json.dumps(str(db.getAllPileInfo()))
+    reportInfo = db.getAllReportInfo()
+    pileInfo = db.getAllPileInfo()
+    return json.dumps({'allReportInfo': str(reportInfo), 'allPileInfo': str(pileInfo)})
 
 @app.route("/admin/charger/service", methods=['POST', 'GET'])
 def adminGetChargerService():
-    return json.dumps(str(db.getAllServingCarInfo()))
+    # 根据充电桩id整合数据
+    info = json.loads(str(db.getAllServingCarInfo()))
+    # 测试数据
+    # info = [{
+    #     'id': '1',
+    #     'client_id': '1',
+    #     'request_vol': 1,
+    #     'car_vol': 1
+    #
+    # }]
+    ids = set()
+    # 找到所有id
+    for each in info:
+        ids.add(each['id'])
+    # 整合数据
+    items = list()
+    for each in ids:
+        item = dict()
+        item['id'] = each
+        item['in_service'] = list()
+        for i in info:
+            if i['id'] == each:
+                item['in_service'].append(i)
+        items.append(item)
+    return json.dumps(dict({'data': items}))
 
 @app.route("/admin/charger/statistic", methods=['POST', 'GET'])
 def adminGetChargerStatistic():
