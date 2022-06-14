@@ -59,6 +59,7 @@
 	  </div>
 	  <div class='disclaimer'>
 	    <p>欢迎使用充电桩智能管理系统</p>
+          <input id="admin" type='button' value='管理员登录'>
 	  </div>
 	</div>
 	<div class='authent'>
@@ -80,11 +81,15 @@
     <script src="js/Particleground.js" type="text/javascript"></script>
     <script src="Js/Treatment.js" type="text/javascript"></script>
     <script src="js/jquery.mockjax.js" type="text/javascript"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	<script type="text/javascript">
-		var canGetCookie = 0;//是否支持存储Cookie 0 不支持 1 支持
+
+
+
+        var canGetCookie = 0;//是否支持存储Cookie 0 不支持 1 支持
 		var ajaxmockjax = 1;//是否启用虚拟Ajax的请求响 0 不启用  1 启用
 		//默认账号密码
-		
+		var vip
 		var truelogin = "1";
 		var truepwd = "1";
 		
@@ -148,9 +153,32 @@
 	    layui.use('layer', function () {
 			var msgalert = '默认账号:' + truelogin + '<br/> 默认密码:' + truepwd;
 
+            $('input[id="register"]').click(function () {
+                console.log("register")
+                var login = $('input[name="login"]').val();
+                var pwd = $('input[name="pwd"]').val();
+                var code = $('input[name="code"]').val();
+                if (login == '') {
+                    ErroAlert('请输入您的账号');
+                } else if (pwd == '') {
+                    ErroAlert('请输入密码');
+                } else if (code == '' || code.length != 4) {
+                    ErroAlert('输入验证码');
+                } else {
+                    console.log(login)
+                    console.log(pwd)
+                    axios.post('http://127.0.0.1:5000/usr/logon', {'name': login, 'password': pwd}).then(
+                        function (response){
+                            console.log(response)
+                        }
+                    )
 
+                }
+
+            })
 	        //非空验证
 	        $('input[id="login"]').click(function () {
+                console.log("login")
 	            var login = $('input[name="login"]').val();
 	            var pwd = $('input[name="pwd"]').val();
 	            var code = $('input[name="code"]').val();
@@ -179,32 +207,21 @@
 	                        queue: false
 	                    }).addClass('visible');
 	                }, 500);
-
+                    var id
 	                //登陆
 	                var JsonData = { login: login, pwd: pwd, code: code };
                     truelogin = login
-                    $.ajax({
-                        url:"http://127.0.0.1:8081/user/login",//要请求的服务器url
-                        data:{
-                            name: login,
-                            pwd: pwd
-                        },//第一个name对应的是后端request.getParameter("name")的name、第二个name对应的是此js中的var name = $("#name").val();的name
-                        async:true,//是否是异步请求
-                        cache:false,//是否缓存结果
-                        type:"POST",//请求方式
-                        dataType:"json",//服务器返回什么类型数据 text xml javascript json(javascript对象)
-                        success:function(result){//函数会在服务器执行成功后执行，result就是服务器返回结果
-                            console.log(result);
-
-                        },
-                        error:function(jqXHR, textStatus, errorThrown) {
-
+                    axios.post('http://127.0.0.1:5000/usr/login', {'name': login, 'password': pwd}).then(
+                        function (response){
+                            response = JSON.parse(response)
+                            vip = 1
+                            id = response.id
                         }
-                    });
+                    )
 
 					//此处做为ajax内部判断
 					var url = "";
-					if(JsonData.login == truelogin && JsonData.pwd == truepwd && JsonData.code.toUpperCase() == CodeVal.toUpperCase()){
+					if(id != 0 && id != 1){
 						console.log("login2")
                         url = "Ajax/Login";
 					}else{
@@ -253,6 +270,111 @@
 	                                })
 	            }
 	        })
+            //非空验证
+            $('input[id="admin"]').click(function () {
+                console.log("login")
+                var login = $('input[name="login"]').val();
+                var pwd = $('input[name="pwd"]').val();
+                var code = $('input[name="code"]').val();
+                if (login == '') {
+                    ErroAlert('请输入您的账号');
+                } else if (pwd == '') {
+                    ErroAlert('请输入密码');
+                } else if (code == '' || code.length != 4) {
+                    ErroAlert('输入验证码');
+                } else {
+                    //认证中..
+                    console.log("login")
+                    //fullscreen();
+                    $('.login').addClass('test'); //倾斜特效
+                    setTimeout(function () {
+                        $('.login').addClass('testtwo'); //平移特效
+                    }, 300);
+                    setTimeout(function () {
+                        $('.authent').show().animate({ right: -320 }, {
+                            easing: 'easeOutQuint',
+                            duration: 600,
+                            queue: false
+                        });
+                        $('.authent').animate({ opacity: 1 }, {
+                            duration: 200,
+                            queue: false
+                        }).addClass('visible');
+                    }, 500);
+                    var id
+                    //登陆
+                    var JsonData = { login: login, pwd: pwd, code: code };
+                    truelogin = login
+                    axios.post('http://127.0.0.1:5000/usr/login', {'name': login, 'password': pwd}).then(
+                        function (response){
+                            response = JSON.parse(response)
+                            id = response.id
+                        }
+                    )
+
+                    //此处做为ajax内部判断
+                    var url = "";
+                    if(true){
+                        vip = 2
+                        console.log("login2")
+                        url = "Ajax/Login";
+                    }else{
+                        console.log("login3")
+                        url = "Ajax/LoginFalse";
+                    }
+
+
+                    AjaxPost(url, JsonData,
+                        function () {
+                            //ajax加载中
+                        },
+                        function (data) {
+                            //ajax返回
+                            //认证完成
+                            setTimeout(function () {
+                                $('.authent').show().animate({ right: 90 }, {
+                                    easing: 'easeOutQuint',
+                                    duration: 600,
+                                    queue: false
+                                });
+                                $('.authent').animate({ opacity: 0 }, {
+                                    duration: 200,
+                                    queue: false
+                                }).addClass('visible');
+                                $('.login').removeClass('testtwo'); //平移特效
+                            }, 2000);
+                            setTimeout(function () {
+                                $('.authent').hide();
+                                $('.login').removeClass('test');
+                                if (data.Status == 'ok') {
+                                    //登录成功
+                                    $('.login div').fadeOut(100);
+                                    $('.success').fadeIn(1000);
+                                    $('.success').html("登陆成功<br /><br />欢迎回来<br /><br />正在进入系统……");
+                                    //跳转操作
+                                    switch (vip) {
+                                        case 1:
+                                            setTimeout(function () {
+                                                window.localStorage.setItem("userName", JsonData.login)
+                                                parent.location.href="/#/user"
+                                            }, 2400)
+                                            break;
+                                        case 2:
+                                            setTimeout(function () {
+                                                window.localStorage.setItem("userName", JsonData.login)
+                                                parent.location.href="/#/charger"
+                                            }, 2400)
+                                            break;
+                                    }
+
+
+                                } else {
+                                    AjaxErro(data);
+                                }
+                            }, 2400);
+                        })
+                }
+            })
 	    })
 	    // var fullscreen = function () {
 	    //     elem = document.body;

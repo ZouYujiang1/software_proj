@@ -7,7 +7,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    redirect: {name: 'Index'}
+    redirect: {name: 'Login'}
   },{
     path: '/index',
     name: 'Index',

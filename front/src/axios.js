@@ -8,7 +8,7 @@ import $ from 'jquery'
 
 createApp(App).config.globalProperties.$=$
 
-axios.defaults.baseURL='http://127.0.0.1:8081'
+axios.defaults.baseURL='http://127.0.0.1:5000'
 axios.interceptors.request.use(
     function (config) {
         // console.log("进入请求拦截器！")
@@ -22,11 +22,12 @@ axios.interceptors.request.use(
     }),
 axios.interceptors.response.use(
     function (response) {
-        const res = response.data;
+        const res = response.status;
         //console.log("后置拦截")
         //console.log(res.code)
         // 当结果的code是否为200的情况
-        if (res.code === 200) {
+
+        if (res === 200) {
 
             return response
         } else {
