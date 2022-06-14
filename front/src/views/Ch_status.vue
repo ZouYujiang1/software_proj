@@ -14,21 +14,21 @@
         <button v-on:click="switch_charge">开/关</button>
         <button v-on:click="switch_broken">故障/修复（模拟）</button>
         <br>
-        充电桩类型：{{current.kind}}
+        充电桩类型：{{kind}}
         <br>
         当前充电区服务车辆数：{{current.service_length}}
       </td>
 
     </tr>
     <tr>
-      <td>累计充电次数：{{current.used_times}}</td>
+      <td>累计充电次数：{{statistic.used_times}}</td>
 
     </tr>
     <tr>
-      <td>充电总时长：{{current.used_minutes}}</td>
+      <td>充电总时长：{{statistic.used_minutes}}</td>
     </tr>
     <tr>
-      <td>充电总电量：{{current.used_vol}}</td>
+      <td>充电总电量：{{statistic.used_vol}}</td>
     </tr>
     <tr>
       <input type="text" class="in" id="in" placeholder="请输入查询充电桩ID" />
@@ -49,12 +49,15 @@ export default {
   data(){
     return {
       message: [],
+      statistics: [],
       current: "",
+      statistic: '',
       current_index: 0,
       current_id: '0',
       working: '运行中',
       broken: '正常',
       timer: '',
+      kind: '',
     }
   },
   mounted() {
@@ -71,7 +74,8 @@ export default {
       for(const i in this.message){
         if(this.message[i].id == search_id){
           this.current = this.message[i];
-          this.current_index = i;
+          this.statistic =this.statistics[i]
+          this.current_index = parseInt(i);
           this.current_id = search_id
           break;
         }
@@ -80,121 +84,138 @@ export default {
     get_data(){
       let vm = this
         axios
-            .get('http://localhost:8081/chargers')
+            .get('http://127.0.0.1:5000/admin/charger/status')
             .then(function (response){
-              vm.message = response;
-
-              vm.current = response[0];
-              for(const i in response){
-                if(response[i].id == vm.current_id){
-                  vm.current = response[i];
-                  vm.current_index = i;
+              let pileInfo = JSON.parse(response.allPileInfo)
+              let report = JSON.parse(response.allReportInfo)
+              console.log(response)
+              vm.message = pileInfo;
+              vm.statistics = report
+              vm.current = pileInfo[0];
+              vm.statistic = report[0]
+              for(const i in pileInfo){
+                if(pileInfo[i].id == vm.current_id && report[i].id == vm.current_id){
+                  vm.current = pileInfo[i];
+                  vm.statistic = report[i]
+                  vm.current_index = parseInt(i);
                   console.log(vm.current)
                   break;
                 }
               }
 
               if(vm.current === null){
-                vm.current = response[0];
+                vm.current = pileInfo[0];
+                vm.statistic = report[0]
                 alert("wrong id")
                 return
               }
-              switch (vm.current.working) {
-                case 0:
-                  vm.working = "关闭";
-                  break;
-                case 1:
-                  vm.working = "运行中";
-                  break;
-                default:
-                  break
-              }
-              switch (vm.current.broken) {
-                case 0:
-                  vm.broken = "正常";
-                  break;
-                case 1:
-                  vm.broken = "故障";
-                  break;
-                default:
-                  break
-              }
-              console.log(vm.current)
+              vm.data_pre()
             })
             .catch(function (error) { // 请求失败处理
               console.log(error);
             })
     },
     data_pre(event){
-
       switch (this.current.working) {
-        case 0:
+        case 'False':
           this.working = "关闭";
           break;
-        case 1:
+        case 'True':
           this.working = "运行中";
           break;
         default:
           break
       }
       switch (this.current.broken) {
-        case 0:
+        case 'False':
           this.broken = "正常";
+          console.log(this.broken)
           break;
-        case 1:
+        case 'True':
           this.broken = "故障";
+          console.log(this.broken)
+          break;
+        default:
+          break
+      }
+      switch (this.current.kind) {
+        case 'T':
+          this.kind = "慢充";
+          break;
+        case 'F':
+          this.kind = "快充";
           break;
         default:
           break
       }
     },
     switch_charge(event){
-      if(this.current.working === 0){
-        this.current.working = 1
+      console.log(this.message)
+      if(this.current.working === false || this.working === '关闭'){
+        this.current.working = true
         this.working = '运行中'
-        axios.post('/charger/open', {'chargerID': this.current.id}).then(
+        axios.post('http://127.0.0.1:5000/admin/charger/open', {'chargerID': this.current.id}).then(
             function (response){
-              console.log(response)
+              if(response === 1){
+
+              }else {
+                console.log('ERROR!')
+              }
             }
         )
       }
       else{
-        this.current.working = 0
+        this.current.working = false
         this.working = '关闭'
-        axios.post('/charger/close', {'chargerID': this.current.id}).then(
+        axios.post('http://127.0.0.1:5000/admin/charger/close', {'chargerID': this.current.id}).then(
             function (response){
-              console.log(response)
+              if(response === 1){
+
+              }else {
+                console.log('ERROR!')
+              }
             }
         )
       }
 
     },
     switch_broken(event){
-      if(this.current.broken === 0){
-        this.current.broken = 1
+      console.log(this.broken, this.current.broken)
+      if(this.current.broken === false || this.broken === '正常'){
+        this.current.broken = true
         this.broken = '故障'
-        axios.post('/charger/break', {'chargerID': this.current.id}).then(
+        axios.post('http://127.0.0.1:5000/admin/charger/break', {'chargerID': this.current.id}).then(
             function (response){
-              console.log(response)
+              if(response === 1){
+
+              }else {
+                console.log('ERROR!')
+              }
             }
         )
       }
       else{
-        this.current.broken = 0
+        this.current.broken = false
         this.broken = '正常'
-        axios.post('/charger/fix', {'chargerID': this.current.id}).then(
+        axios.post('http://127.0.0.1:5000/admin/charger/fix', {'chargerID': this.current.id}).then(
             function (response){
-              console.log(response)
+              if(response === 1){
+
+              }else {
+                console.log('ERROR!')
+              }
             }
         )
       }
     },
     next_one(event){
-      this.current_index = this.current_index + 1
-      if(this.message.length <= this.current_index){
+      console.log(this.message.length, this.current_index + 1)
+      if(this.message.length <= this.current_index + 1){
         return
       }else{
+        this.current_index = this.current_index + 1
         this.current = this.message[this.current_index]
+        this.statistic = this.statistics[this.current_index]
         this.current_id = this.current.id
       }
       this.data_pre()
@@ -205,6 +226,7 @@ export default {
       }
       this.current_index = this.current_index - 1
       this.current = this.message[this.current_index]
+      this.statistic = this.statistics[this.current_index]
       this.current_id = this.current.id
       this.data_pre()
     }

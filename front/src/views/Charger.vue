@@ -52,18 +52,7 @@ export default {
 
   },
   mounted() {
-    let vm = this;
-    axios
-        .get('http://localhost:8081/chargers')
-        .then(function (response){
-          vm.message = response;
-          vm.current = response[0];
-          console.log('Charger')
-          router.push({name: 'Ch_status'})
-        })
-        .catch(function (error) { // 请求失败处理
-          console.log(error);
-        });
+    router.push({name: 'Ch_status'})
   },
   computed:{
     id(){

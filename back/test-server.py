@@ -1,27 +1,28 @@
 from cgi import test
+from datetime import datetime, timedelta
 import requests
 
 def testUsrLogon():
     url = 'http://127.0.0.1:5000/usr/logon'
-    json = { "name" : '小明' , "password":'114514'}
+    json = { "name" : '小红' , "password":'114514'}
     res = requests.post(url=url, json=json)
     print(res.json())
 
 def testUsrLogin():
     url = 'http://127.0.0.1:5000/usr/login'
-    json = { "name" : '小明' , "password":'114514'}
+    json = { "name" : '小红' , "password":'114514'}
     res = requests.post(url=url, json=json)
     print(res.json())
 
 def testUsrUnsubscrib():
     url = 'http://127.0.0.1:5000/usr/unsubscrib'
-    json = { "name" : '小明' , "password":'114514'}
+    json = { "name" : '小红' , "password":'114514'}
     res = requests.post(url=url, json=json)
     print(res.json())
 
 def testGetQueueNo():
     url = 'http://127.0.0.1:5000/usr/getqueueno'
-    json = { "name" : '小明' , "chargingMode" : 'F', "requestVol" : '11.4514'}
+    json = { "name" : '小红' , "chargingMode" : 'F', "requestVol" : '11.4514'}
     res = requests.post(url=url, json=json)
     print(res.json())
 
@@ -79,11 +80,12 @@ def testChargeFix():
     res = requests.post(url=url, json=json)
     print(res.json())
 
-testUsrLogon()
-testUsrLogin()
-testGetQueueNo()
-testQueuingUsrInfo()
-testUsrUnsubscrib()
+# print((datetime(2021,3,21,3,56,56,3432) - datetime(2021,3,21,3,50,56,3432))/timedelta(minutes=1))
+# testUsrLogon()
+# testUsrLogin()
+# testGetQueueNo()
+# testQueuingUsrInfo()
+# testUsrUnsubscrib()
 # testUsrInfo()
 # testChargersStatus()
 # testChargersService()
