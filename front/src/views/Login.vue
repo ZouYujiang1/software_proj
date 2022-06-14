@@ -3,7 +3,7 @@
  </template>
 
 <script>
-import screenfull from 'screenfull'
+// import screenfull from 'screenfull'
 
 export default {
   name: "Login",

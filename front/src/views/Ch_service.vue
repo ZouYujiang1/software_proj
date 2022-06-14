@@ -74,8 +74,8 @@ export default {
         axios
             .get('http://127.0.0.1:5000/admin/charger/service')
             .then(function (response){
-              console.log(typeof response['data'])
-              response = response['data']
+              console.log(response)
+              response = response.data['data']
               vm.message = response;
               vm.current = response[0];
               for(const i in response){

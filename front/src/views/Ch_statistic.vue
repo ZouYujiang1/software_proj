@@ -10,7 +10,7 @@
     </tr>
     <tr>
       <td>
-        时间：{{current.date}}
+        时间：{{gettime}}
       </td>
 
     </tr>
@@ -55,6 +55,7 @@ export default {
       current_index: 0,
       current_id: '000',
       timer: '',
+      gettime: '',
     }
   },
   mounted() {
@@ -62,12 +63,25 @@ export default {
     const route = useRoute()
     //从路由中获取充电桩id
     vm.current_id = route.params.id
+    vm.getCurrentTime()
     vm.get_data()
     vm.timer = setInterval(() => vm.get_data()
       , 60000)//60s轮询
 
   },
   methods:{
+    getCurrentTime() {
+      //获取当前时间并打印
+      var _this = this;
+      let yy = new Date().getFullYear();
+      let mm = new Date().getMonth()+1;
+      let dd = new Date().getDate();
+      let hh = new Date().getHours();
+      let mf = new Date().getMinutes()<10 ? '0'+new Date().getMinutes() : new Date().getMinutes();
+      let ss = new Date().getSeconds()<10 ? '0'+new Date().getSeconds() : new Date().getSeconds();
+      _this.gettime = yy+'-'+mm+'-'+dd
+      console.log(_this.gettime)
+    },
     search(event){
       let search_id = document.getElementById('in').value
       for(const i in this.message){
@@ -84,7 +98,7 @@ export default {
         axios
             .get('http://127.0.0.1:5000/admin/charger/statistic')
             .then(function (response){
-              response = JSON.parse(response)
+              response = response.data['data']
               vm.message = response;
               vm.current = response[0];
               for(const i in response){

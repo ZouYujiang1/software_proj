@@ -86,8 +86,9 @@ export default {
         axios
             .get('http://127.0.0.1:5000/admin/charger/status')
             .then(function (response){
-              let pileInfo = JSON.parse(response.allPileInfo)
-              let report = JSON.parse(response.allReportInfo)
+              response = response.data
+              let pileInfo = response.allPileInfo
+              let report = response.allReportInfo
               console.log(response)
               vm.message = pileInfo;
               vm.statistics = report

@@ -316,13 +316,16 @@ def adminQueuingUserInfo():
 def adminGetChargerStatus():
     reportInfo = db.getAllReportInfo()
     pileInfo = db.getAllPileInfo()
-    return json.dumps({'allReportInfo': str(reportInfo), 'allPileInfo': str(pileInfo)})
+    return '{' + f'''"allReportInfo":  {str(reportInfo)}, "allPileInfo": {str(pileInfo)}''' + '}'
 
 
 @app.route("/admin/charger/service", methods=['POST', 'GET'])
 def adminGetChargerService():
     # 根据充电桩id整合数据
     info = json.loads(str(db.getAllServingCarInfo()))
+    startChargingTime = json.loads(str(db.getAllOrderInfo()))  # startUpTime
+    getQueueNoTime = json.loads(str(db.getAllQueuingUserInfo())) # queueTime
+
     # 测试数据
     # info = [{
     #     'id': '1',
@@ -331,6 +334,18 @@ def adminGetChargerService():
     #     'car_vol': 1
     #
     # }]
+    t = list()
+    for a in startChargingTime:
+        for b in getQueueNoTime:
+            if a['userID'] == b['id']:
+                temp = dict()
+                temp['client_id'] = b['id']
+                temp['queue_minutes'] = a['startUpTime'] - b['applyTime']
+                t.append(temp)
+    for inf in info:
+        for temp in t:
+            if inf['client_id'] == temp['client_id']:
+                inf['queue_minutes'] = temp['queue_minutes']
     ids = set()
     # 找到所有id
     for each in info:
@@ -345,12 +360,12 @@ def adminGetChargerService():
             if i['id'] == each:
                 item['in_service'].append(i)
         items.append(item)
-    return json.dumps(dict({'data': items}))
+    return json.dumps({'data': items})
 
 
 @app.route("/admin/charger/statistic", methods=['POST', 'GET'])
 def adminGetChargerStatistic():
-    return json.dumps(str(db.getAllReportInfo()))
+    return '{' + f'''"data": {str(db.getAllReportInfo())}''' + '}'
 
 
 @app.route("/admin/charger/open", methods=['POST', 'GET'])
