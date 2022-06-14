@@ -195,6 +195,10 @@ Base.metadata.create_all()
 
 
 class DB(object):
+    # 获取电价
+    # TODO:根据输入时间获取当时电价
+    # def getVolPrice(self, datetime):
+
     # 表三相关
     # 添加用户信息，成功则返回刚插入用户的id，失败返回-1
     def addUser(self, name, password):
@@ -237,6 +241,8 @@ class DB(object):
         queryResult = session.query(User).filter(or_(User.id == nameOrID, User.name == nameOrID)).first()
         if queryResult is not None:
             queryResult.password = password
+            session.add(queryResult)
+            session.commit()
             return queryResult.id
         else:
             return -1
@@ -568,6 +574,8 @@ class DB(object):
         query_result = session.query(ChargingOrder).all()
         for result in query_result:
             print(result)
+        return query_result
+
 
     # 表五相关
     # 添加新的充电桩

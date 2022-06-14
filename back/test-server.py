@@ -1,4 +1,5 @@
 from cgi import test
+from datetime import datetime, timedelta
 import requests
 
 def testUsrLogon():
@@ -79,11 +80,12 @@ def testChargeFix():
     res = requests.post(url=url, json=json)
     print(res.json())
 
-testUsrLogon()
-testUsrLogin()
-testGetQueueNo()
+# print((datetime(2021,3,21,3,56,56,3432) - datetime(2021,3,21,3,50,56,3432))/timedelta(minutes=1))
+# testUsrLogon()
+# testUsrLogin()
+# testGetQueueNo()
 # testQueuingUsrInfo()
-testUsrUnsubscrib()
+# testUsrUnsubscrib()
 # testUsrInfo()
 # testChargersStatus()
 # testChargersService()
