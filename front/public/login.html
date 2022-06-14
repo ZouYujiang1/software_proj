@@ -85,11 +85,13 @@
 		var ajaxmockjax = 1;//是否启用虚拟Ajax的请求响 0 不启用  1 启用
 		//默认账号密码
 		
-		var truelogin = "kbcxy";
-		var truepwd = "mcwjs";
+		var truelogin = "1";
+		var truepwd = "1";
 		
 		var CodeVal = 0;
 	    Code();
+
+
 	    function Code() {
 			if(canGetCookie == 1){
 				createCode("AdminCode");
@@ -115,10 +117,10 @@
 	        }
 	    });
 	    //粒子背景特效
-	    $('body').particleground({
-	        dotColor: '#E8DFE8',
-	        lineColor: '#133b88'
-	    });
+	    // $('body').particleground({
+	    //     dotColor: '#E8DFE8',
+	    //     lineColor: '#133b88'
+	    // });
 	    $('input[name="pwd"]').focus(function () {
 	        $(this).attr('type', 'password');
 	    });
@@ -161,7 +163,7 @@
 	            } else {
 	                //认证中..
                     console.log("login")
-	                fullscreen();
+	                //fullscreen();
 	                $('.login').addClass('test'); //倾斜特效
 	                setTimeout(function () {
 	                    $('.login').addClass('testtwo'); //平移特效
@@ -237,9 +239,13 @@
 	                                            //登录成功
 	                                            $('.login div').fadeOut(100);
 	                                            $('.success').fadeIn(1000);
-	                                            $('.success').html(data.Text);
+	                                            $('.success').html("登陆成功<br /><br />欢迎回来<br /><br />正在进入系统……");
 												//跳转操作
-												
+                                                setTimeout(function () {
+                                                    window.localStorage.setItem("userName", JsonData.login)
+                                                    parent.location.href="/#/user"
+                                                }, 2400)
+
 	                                        } else {
 	                                            AjaxErro(data);
 	                                        }
@@ -248,24 +254,25 @@
 	            }
 	        })
 	    })
-	    var fullscreen = function () {
-	        elem = document.body;
-	        if (elem.webkitRequestFullScreen) {
-	            elem.webkitRequestFullScreen();
-	        } else if (elem.mozRequestFullScreen) {
-	            elem.mozRequestFullScreen();
-	        } else if (elem.requestFullScreen) {
-	            elem.requestFullscreen();
-	        } else {
-	            //浏览器不支持全屏API或已被禁用  
-	        }
-	    }  
+	    // var fullscreen = function () {
+	    //     elem = document.body;
+	    //     if (elem.webkitRequestFullScreen) {
+	    //         elem.webkitRequestFullScreen();
+	    //     } else if (elem.mozRequestFullScreen) {
+	    //         elem.mozRequestFullScreen();
+	    //     } else if (elem.requestFullScreen) {
+	    //         elem.requestFullscreen();
+	    //     } else {
+	    //         //浏览器不支持全屏API或已被禁用
+	    //     }
+	    // }
 		if(ajaxmockjax == 1){
 			$.mockjax({  
 				url: 'Ajax/Login',  
 				status: 200,  
 				responseTime: 50,          
-				responseText: {"Status":"ok","Text":"登陆成功<br /><br />欢迎回来"}  
+				responseText: {"Status":"ok","Text":"登陆成功<br /><br />欢迎回来"}
+
 			}); 
 			$.mockjax({  
 				url: 'Ajax/LoginFalse',  
@@ -274,6 +281,8 @@
 				responseText: {"Status":"Erro","Erro":"账号名或密码或验证码有误"}
 			});   
 		}
+
+
     </script>
 </body>
 </html>

@@ -20,32 +20,20 @@ app = Flask(__name__)
 # r'/*' 是通配符，让本服务器所有的 URL 都允许跨域请求
 CORS(app, resources=r'/*')
 
-# 充电桩系统运行时控制
-'''开始充电时'''
-# 从usrID到orderID的映射
-# {usrID:orderID}
-usrActiveOrder = {}
-# 请求电量
-# {orderID:requestVol}
-usrRequestVol = {}
-# 存储orderID中的实际充电量
-# {orderID:powerUsed}
-actualVolUsed = {}
 
-
-# TODO:检查是否维护了所有的六张表
 @app.route("/")
 def printAllTestURL():
     urlTestList = '{'
-    urlTestList += '\nusrLogon: ' + request.url + url_for('usrLogon',name='Jackie',password='114514')
-    urlTestList += '\nusrLogin: ' + request.url + url_for('usrLogin',name='Jackie',password='114514')
-    urlTestList += '\nusrResetPWD: ' + request.url + url_for('usrResetPWD',name='Jackie',password='114514')
-    urlTestList += '\nusrPersonal: ' + request.url + url_for('usrPersonal',name='Jackie',password='114514')
-    urlTestList += '\nusrGetQueueNo: ' + request.url + url_for('usrGetQueueNo',name='Jackie',chargingMode='F')
+    urlTestList += '\nusrLogon: ' + request.url + url_for('usrLogon', name='Jackie', password='114514')
+    urlTestList += '\nusrLogin: ' + request.url + url_for('usrLogin', name='Jackie', password='114514')
+    urlTestList += '\nusrResetPWD: ' + request.url + url_for('usrResetPWD', name='Jackie', password='114514')
+    urlTestList += '\nusrPersonal: ' + request.url + url_for('usrPersonal', name='Jackie', password='114514')
+    urlTestList += '\nusrGetQueueNo: ' + request.url + url_for('usrGetQueueNo', name='Jackie', chargingMode='F')
     urlTestList += '\nadminUsrInfo: ' + request.url + url_for('adminUsrInfo')
     urlTestList += '\n}'
     print(urlTestList)
     return urlTestList
+
 
 @app.route("/usr/logon", methods=['POST'])
 def usrLogon():
@@ -53,6 +41,9 @@ def usrLogon():
     password = request.json['password']
     id = db.addUser(name,password)
     return json.dumps({'id':id})
+
+
+
 
 @app.route("/usr/unsubscrib", methods=['POST'])
 def usrUnsubscrib():
@@ -76,11 +67,7 @@ def usrLogin():
     # checkResult成功时返回id，失败时返回0或-1
     checkResult = db.checkUserPwd(name, password)
     if checkResult > 0:
-        return json.dumps({'status': 'UsrId OnLine Now', 'id':checkResult})
-    elif checkResult == 0:
-        return json.dumps({'status': 'Password Error', 'id':0})
-    else:
-        return json.dumps({'status': 'UsrId Not Found', 'id':-1})
+
 
 @app.route("/usr/resetpwd", methods=['POST'])
 def usrResetPWD():
@@ -89,7 +76,8 @@ def usrResetPWD():
 
     # checkResult成功时返回id，失败时返回-1
     checkResult = db.resetUserPwd(name, password)
-    return json.dumps({'id':checkResult})
+    return json.dumps({'id': checkResult})
+
 
 @app.route("/usr/personal", methods=['POST'])
 def usrPersonal():
@@ -101,7 +89,8 @@ def usrPersonal():
     if checkResult > 0:
         return db.getUserInfo(name)
     else:
-        return json.dumps({'id':-1,'status':'UsrId or UsrName Not Found'})
+        return json.dumps({'id': -1, 'status': 'UsrId or UsrName Not Found'})
+
 
 @app.route("/usr/getqueueno", methods=['POST'])
 def usrGetQueueNo():
@@ -110,8 +99,7 @@ def usrGetQueueNo():
     requestVol = request.json['requestVol']
     timeOfApplyingNo = datetime.now()
 
-    # FIXME:carStatus判断是否加入等待区
-    # FIXME:addCar()需要queueNo，queueNo不包括未加入等待区的车辆
+
     usrInfo = db.getUserInfo(usrName)
     if usrInfo is None:
         return json.dumps('The User: ' + str(usrName) + ' didn`t logon.')
@@ -278,6 +266,8 @@ def usrGetOrderInfo():
     orderID = usrActiveOrder[usrID]
     return json.dumps(str(db.getOrder(orderID)))
 
+
+
 @app.route("/admin/usr-info", methods=['POST'])
 def adminUsrInfo():
     return json.dumps(str(db.getAllUserInfo()))
@@ -348,6 +338,6 @@ def adminChargeFix():
     Dispatcher.onCharger(chargerID)  # 算法模块中开启charger
     return str(db.setPileWork(chargerID))
 
+
 if __name__ == '__main__':
-    print('HelloWorld')
-    app.run(port='5000')
+
