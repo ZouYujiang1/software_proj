@@ -299,17 +299,17 @@ def usrEndCharging():
 def usrGetOrderInfo():
     usrID = request.json['id']
     orderID = usrActiveOrder[usrID]
-    return json.dumps(str(db.getOrder(orderID)))
+    return '{' + f'''"data": {str(db.getOrder(orderID))}''' + '}'
 
 
 @app.route("/admin/usr-info", methods=['POST'])
 def adminUsrInfo():
-    return json.dumps(str(db.getAllUserInfo()))
+    return '{' + f'''"data": {str(db.getUserInfo())}''' + '}'
 
 
 @app.route("/admin/queue-info", methods=['POST'])
 def adminQueuingUserInfo():
-    return json.dumps(str(db.getAllQueuingUserInfo()))
+    return '{' + f'''"data": {str(db.getAllQueuingUserInfo())}''' + '}'
 
 
 @app.route("/admin/charger/status", methods=['POST', 'GET'])

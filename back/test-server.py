@@ -30,13 +30,15 @@ def testUsrInfo():
     url = 'http://127.0.0.1:5000/admin/usr-info'
     json = { "chargerID" : 1 }
     res = requests.post(url=url, json=json)
-    print(res.json())
+    for each in res.json()['data']:
+        print(each)
 
 def testQueuingUsrInfo():
     url = 'http://127.0.0.1:5000/admin/queue-info'
     json = { "chargerID" : 1 }
     res = requests.post(url=url, json=json)
-    print(res.json())
+    for each in res.json()['data']:
+        print(each)
 
 def testChargersStatus():
     url = 'http://127.0.0.1:5000/admin/charger/status'
@@ -48,13 +50,15 @@ def testChargersService():
     url = 'http://127.0.0.1:5000/admin/charger/service'
     json = { "chargerID" : 1 }
     res = requests.post(url=url, json=json)
-    print(res.json())
+    for each in res.json()['data']:
+        print(each)
 
 def testChargersStatistic():
     url = 'http://127.0.0.1:5000/admin/charger/statistic'
     json = { "chargerID" : 1 }
     res = requests.post(url=url, json=json)
-    print(res.json())
+    for each in res.json()['data']:
+        print(each)
 
 def testChargerTurnOn():
     url = 'http://127.0.0.1:5000/admin/charger/open'
@@ -84,7 +88,7 @@ def testChargeFix():
 # testUsrLogon()
 # testUsrLogin()
 # testGetQueueNo()
-# testQueuingUsrInfo()
+testQueuingUsrInfo()
 # testUsrUnsubscrib()
 # testUsrInfo()
 # testChargersStatus()
