@@ -9,6 +9,10 @@ const routes = [
     name: 'Home',
     redirect: {name: 'Login'}
   },{
+    path: '/test',
+    name: 'Test',
+    component: () => import('../views/Test')
+  },{
     path: '/index',
     name: 'Index',
     component: () => import('../views/Index')

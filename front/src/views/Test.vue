@@ -152,7 +152,7 @@
 import axios from "axios";
 
 export default {
-  name: "User",
+  name: "Test",
   data() {
     return {
       userName: window.localStorage.getItem("userName"),
@@ -198,6 +198,7 @@ export default {
 
   },
   mounted() {
+
     this.cancle()
 
     window.clearInterval(this.timer)
@@ -205,16 +206,33 @@ export default {
     console.log(userName)
   },
   methods: {
+
     test() {
       var _this = this
-      for (let i = 6; i <= 8; i++) {
-        _this.order.userName = i + ''
+      var i = 3
+      var timer = setInterval(function (){
+        if (i == 7){
+          window.clearInterval(timer)
+        }
+        _this.order.name = i + ''
         _this.order.id = i
         _this.order.requestVol = 10
         _this.order.chargingMode = 'F'
-        _this.onSubmit()
+        _this.onSubmit(i)
+        i ++
+      }, 2000)
+
+    },
+    sleep(numberMillis) {
+      var now = new Date();
+      var exitTime = now.getTime() + numberMillis;
+      while (true) {
+        now = new Date();
+        if (now.getTime() > exitTime)
+          return true;
       }
     },
+
     cancle() {
       var _this = this
       axios.post('http://127.0.0.1:5000/usr/cancel', _this.order).then(
@@ -226,7 +244,7 @@ export default {
           }
       )
     },
-    perSecond() {
+    perSecond(i) {
       const _this = this
       axios.post('http://127.0.0.1:5000/usr/car-status', _this.order).then(
           function (response) {
@@ -234,12 +252,12 @@ export default {
             console.log(response)
             switch (response.data.status){
               case 'charging':
-                window.clearInterval(_this.timer)
+                window.clearInterval(_this.timerList[i])
                 axios.post('http://127.0.0.1:5000/usr/start-charging', _this.order).then(
                     function (response) {
                       console.log(response.data)
-                      _this.timer2 = setInterval(function () {
-                        _this.perSecond2()
+                      _this.timerList[i] = setInterval(function () {
+                        _this.perSecond2(i)
                       }, 1000)
                     }
                 )
@@ -247,13 +265,13 @@ export default {
           }
       )
     },
-    perSecond2() {
+    perSecond2(i) {
       const _this = this
       axios.post('http://127.0.0.1:5000/usr/car-status', _this.order).then(
           function (response) {
             _this.carsAhead = response.data.carsAhead
             if (response.data.status == 'charging-finished'){
-              window.clearInterval(_this.timer2)
+              window.clearInterval(_this.timerList[i])
               axios.post('http://127.0.0.1:5000/usr/end-charging', _this.order).then(
                   function (response) {
                     console.log(response)
@@ -266,14 +284,14 @@ export default {
               _this.ele_per = (_this.vol / _this.order.carVol) * 100
             }
             console.log(response)
-            }
+          }
       )
     },
     handleSelect(key, keyPath) {
       this.index = key
       console.log(this.index)
     },
-    onSubmit() {
+    onSubmit(i) {
       var mode = [100, 150, 200, 250, 300]
       var _this = this
       _this.order.carVol = mode[Math.floor(Math.random() * 5)]
@@ -309,8 +327,8 @@ export default {
                 break;
             }
 
-            _this.timer = setInterval(function () {
-              _this.perSecond()
+            _this.timerList[i] = setInterval(function () {
+              _this.perSecond(i)
             }, 1000)
 
           }
