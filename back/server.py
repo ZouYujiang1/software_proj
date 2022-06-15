@@ -14,10 +14,12 @@ from sqlalchemy import func, true
 from backDB import DB, QueuingUser
 from dispatcher import Dispatcher, UserStatus
 
+
 # 实例化数据库
 db = DB()
 # 初始化数据库
 db.init()
+
 # 实例化算法
 dispatcher = Dispatcher()
 app = Flask(__name__)
