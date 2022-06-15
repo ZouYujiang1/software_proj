@@ -21,7 +21,7 @@ db = DB()
 db.init()
 
 # 实例化算法
-dispatcher = Dispatcher()
+dispatcher = Dispatcher(db)
 app = Flask(__name__)
 # r'/*' 是通配符，让本服务器所有的 URL 都允许跨域请求
 CORS(app, resources=r'/*')
