@@ -231,7 +231,7 @@ export default {
       axios.post('http://127.0.0.1:5000/usr/car-status', _this.order).then(
           function (response) {
             _this.carsAhead = response.data.carsAhead
-            console.log(response)
+            console.log(_this.order.userName, response)
             switch (response.data.status){
               case 'charging':
                 window.clearInterval(_this.timer)
@@ -256,7 +256,7 @@ export default {
               window.clearInterval(_this.timer2)
               axios.post('http://127.0.0.1:5000/usr/end-charging', _this.order).then(
                   function (response) {
-                    console.log(response)
+                    console.log(_this.order.userName, response)
                     _this.isRunning = false
                     _this.menu = response.data
                   }
@@ -294,7 +294,7 @@ export default {
             _this.ele_per = (_this.order.startVol / _this.order.carVol) * 100
             _this.isRunning = true
             console.log(_this.car_per)
-            switch (data.queueNo) {
+            switch (data.carStatus) {
               case 3:
                 _this.area = "优先等待区"
                 break;

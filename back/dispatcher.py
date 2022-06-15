@@ -110,13 +110,14 @@ class Dispatcher(object):
                 self.fast_pri_queue.remove(username)
                 self.waiting_fast_car -= 1
         else:
-            if not self.__chargerQueueFull(status.status):
+            if self.__chargerQueueFull(status.status):
                 if status.charging_mode == 'T':
                     self.avai_slow_charger += 1
                 else:
                     self.avai_fast_charger += 1
             self.charger_queue[status.status].remove(username)
             self.charger_vol[status.status] -= status.request_vol
+            self.__dispatch(status.charging_mode)
         del self.user_status[username]
 
     def changeChargePower(self, username: str, request_vol: int) -> None:
@@ -383,7 +384,16 @@ if __name__ == '__main__':
     db = backDB.DB()
     db.init()
     dispatcher = Dispatcher(db)
-    dispatcher.addCar(1, '233', 'T', 3)
-    dispatcher.addCar(2, '455', 'T', 3)
-    print(dispatcher.carStatus('233'))
-    print(dispatcher.carStatus('455'))
+    dispatcher.addCar(1, '1', 'F', 3)
+    dispatcher.addCar(2, '2', 'F', 3)
+    dispatcher.addCar(3, '3', 'F', 3)
+    dispatcher.addCar(4, '4', 'F', 3)
+    dispatcher.addCar(5, '5', 'F', 3)
+    dispatcher.exitCar('1')
+    print(dispatcher.carStatus('5'))
+    dispatcher.exitCar('2')
+    dispatcher.exitCar('3')
+    dispatcher.exitCar('4')
+    print(dispatcher.carStatus('5'))
+
+

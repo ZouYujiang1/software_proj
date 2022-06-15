@@ -922,6 +922,7 @@ class DB(object):
         # 第一次打开
         if queryResult is not None:
             session.delete(queryResult)
+            print(str(queryResult))
             session.commit()
 
         # 初始化设备信息
@@ -958,6 +959,10 @@ class DB(object):
         session.add(User1)
         session.commit()
         User1 = User(name="7", password="1", identity="U")
+        session.add(User1)
+        session.commit()
+
+        User1 = User(name="8", password="1", identity="U")
         session.add(User1)
         session.commit()
 

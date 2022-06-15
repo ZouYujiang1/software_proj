@@ -88,22 +88,26 @@
                 </el-form-item>
               </el-form>
             </el-card>
-            <el-card style="margin-top: 20px">
+            <el-card v-for="(item,index) in list" style="margin-top: 20px">
+              <el-row>
+                <el-col :span="4">车辆标号：</el-col>
+                <el-col :span="5">{{index}}</el-col>
+              </el-row>
               <el-row>
                 <el-col :span="4">本车排队代码：</el-col>
-                <el-col :span="5">{{ number }}</el-col>
+                <el-col :span="5">{{ item.number }}</el-col>
               </el-row>
               <el-row>
                 <el-col :span="4">前车等待数量：</el-col>
-                <el-col :span="5">{{ carsAhead }}</el-col>
+                <el-col :span="5">{{ item.carsAhead }}</el-col>
               </el-row>
               <el-row>
                 <el-col :span="4">当前所在区域：</el-col>
-                <el-col :span="5">{{ area }}</el-col>
+                <el-col :span="5">{{ item.area }}</el-col>
               </el-row>
               <el-row>
                 <el-col :span="4">预期使用充电桩：</el-col>
-                <el-col :span="5">{{ chargePileID }}</el-col>
+                <el-col :span="5">{{ item.chargePileID }}</el-col>
               </el-row>
               <el-row>
                 <el-col :span="4">等待前车进度：</el-col>
@@ -111,7 +115,7 @@
                   <el-progress
                       :text-inside="true"
                       :stroke-width="20"
-                      :percentage="car_per"
+                      :percentage="item.car_per"
                       status="exception"
                       color="blue"
                   >
@@ -122,7 +126,7 @@
               <el-row>
                 <el-col :span="4">汽车充电进度：</el-col>
                 <el-col :span="5">
-                  <el-progress type="dashboard" :percentage="ele_per">
+                  <el-progress type="dashboard" :percentage="item.ele_per" :indeterminate="true">
                     <template #default="{ percentage }">
                       <span class="percentage-value">{{ percentage }}%</span>
 
@@ -132,13 +136,14 @@
               </el-row>
               <button>结束充电</button>
             </el-card>
+            <div>
+              <button @click="test">test</button>
+            </div>
           </div>
           <div>
             {{menu}}
           </div>
-          <div>
-            <button @click="test">test</button>
-          </div>
+
         </el-main>
       </el-container>
     </div>
@@ -191,7 +196,9 @@ export default {
       timer2: null,
       vol: 0,
       menu: {},
-      timerList: []
+      timerList: [],
+      timerList2: [],
+      list: []
     }
   },
   created() {
@@ -199,26 +206,23 @@ export default {
   },
   mounted() {
 
-    this.cancle()
-
-    window.clearInterval(this.timer)
-    const userName = window.localStorage.getItem("userName")
-    console.log(userName)
   },
   methods: {
 
     test() {
       var _this = this
-      var i = 3
+      var i = 0
       var timer = setInterval(function (){
-        if (i == 7){
+        if (i == 5){
           window.clearInterval(timer)
         }
-        _this.order.name = i + ''
-        _this.order.id = i
-        _this.order.requestVol = 10
-        _this.order.chargingMode = 'F'
-        _this.onSubmit(i)
+        var j = i + 3
+        var temp = {}
+        temp.name = j + ''
+        temp.id = j
+        temp.requestVol = 10
+        temp.chargingMode = 'F'
+        _this.onSubmit(i, temp)
         i ++
       }, 2000)
 
@@ -246,17 +250,47 @@ export default {
     },
     perSecond(i) {
       const _this = this
-      axios.post('http://127.0.0.1:5000/usr/car-status', _this.order).then(
+      console.log(_this.list[i])
+      axios.post('http://127.0.0.1:5000/usr/car-status', _this.list[i].order).then(
           function (response) {
-            _this.carsAhead = response.data.carsAhead
+            _this.list[i].carsAhead = response.data.carsAhead
+            switch (response.data.carStatus) {
+              case 3:
+                _this.list[i].area = "优先等待区"
+                break;
+              case 2:
+                _this.list[i].area = "等待区"
+                break;
+              case 1:
+                _this.list[i].area = "充电等待区"
+                break;
+              default:
+                console.log(123)
+                _this.list[i].area = "充电区"
+                break;
+            }
             console.log(response)
             switch (response.data.status){
               case 'charging':
                 window.clearInterval(_this.timerList[i])
-                axios.post('http://127.0.0.1:5000/usr/start-charging', _this.order).then(
+                axios.post('http://127.0.0.1:5000/usr/start-charging', _this.list[i].order).then(
                     function (response) {
                       console.log(response.data)
-                      _this.timerList[i] = setInterval(function () {
+                      switch (response.data.carStatus) {
+                        case 3:
+                          _this.list[i].area = "优先等待区"
+                          break;
+                        case 2:
+                          _this.list[i].area = "等待区"
+                          break;
+                        case 1:
+                          _this.list[i].area = "充电等待区"
+                          break;
+                        default:
+                          _this.list[i].area = "充电区"
+                          break;
+                      }
+                      _this.timerList2[i] = setInterval(function () {
                         _this.perSecond2(i)
                       }, 1000)
                     }
@@ -267,21 +301,29 @@ export default {
     },
     perSecond2(i) {
       const _this = this
-      axios.post('http://127.0.0.1:5000/usr/car-status', _this.order).then(
+      axios.post('http://127.0.0.1:5000/usr/car-status', _this.list[i].order).then(
           function (response) {
-            _this.carsAhead = response.data.carsAhead
-            if (response.data.status == 'charging-finished'){
-              window.clearInterval(_this.timerList[i])
-              axios.post('http://127.0.0.1:5000/usr/end-charging', _this.order).then(
+            _this.list[i].carsAhead = response.data.carsAhead
+
+            if (response.data.status === 'charging-finished'){
+              window.clearInterval(_this.timerList2[i])
+              // _this.list[i] = null
+              console.log(278, response.data.status)
+              axios.post('http://127.0.0.1:5000/usr/end-charging', _this.list[i].order).then(
                   function (response) {
-                    console.log(response)
+                    console.log(281, response)
                     _this.isRunning = false
+
                     _this.menu = response.data
+                  }
+              ).catch(
+                  function (err){
+                    console.log(err)
                   }
               )
             } else {
-              _this.vol += response.data.incVol
-              _this.ele_per = (_this.vol / _this.order.carVol) * 100
+              _this.list[i].vol += response.data.incVol
+              _this.list[i].ele_per = (_this.list[i].vol / _this.list[i].carVol) * 100
             }
             console.log(response)
           }
@@ -291,14 +333,14 @@ export default {
       this.index = key
       console.log(this.index)
     },
-    onSubmit(i) {
+    onSubmit(i, order) {
       var mode = [100, 150, 200, 250, 300]
       var _this = this
       _this.order.carVol = mode[Math.floor(Math.random() * 5)]
-      _this.order.startVol = Math.floor(Math.random() * (_this.order.carVol + 1))
-      _this.vol = _this.order.startVol
-      console.log(this.order)
-      axios.post('http://127.0.0.1:5000/usr/getqueueno', _this.order).then(
+      _this.order.startVol = Math.floor(Math.random() * (order.carVol + 1))
+      _this.vol = order.startVol
+      console.log(order)
+      axios.post('http://127.0.0.1:5000/usr/getqueueno', order).then(
           function (response) {
             console.log(response)
             let data = response.data
@@ -312,7 +354,7 @@ export default {
             _this.ele_per = (_this.order.startVol / _this.order.carVol) * 100
             _this.isRunning = true
             console.log(_this.car_per)
-            switch (data.queueNo) {
+            switch (data.carStatus) {
               case 3:
                 _this.area = "优先等待区"
                 break;
@@ -326,6 +368,26 @@ export default {
                 _this.area = "充电区"
                 break;
             }
+            var obj = {}
+            obj.number = data.carsAhead + 1 + ""
+            obj.carsAhead = data.carsAhead + ""
+            obj.area = _this.area
+            obj.chargePileID = data.chargePileID
+            obj.car_per = (data.carsAhead + 1 - data.carsAhead) / (data.carsAhead + 1) * 100
+
+            obj.carVol = mode[Math.floor(Math.random() * 5)]
+            obj.startVol = Math.floor(Math.random() * (obj.carVol + 1))
+            obj.ele_per = (obj.startVol / obj.carVol) * 100
+            obj.vol = obj.startVol
+            obj.order = order
+            obj.order.startVol = obj.startVol
+            obj.order.carVol = obj.carVol
+            _this.list.push(obj)
+            console.log(i)
+            console.log(_this.list)
+            console.log(_this.list[i])
+
+            console.log()
 
             _this.timerList[i] = setInterval(function () {
               _this.perSecond(i)

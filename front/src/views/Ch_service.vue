@@ -21,6 +21,12 @@
       <td>
         排队时间（分钟）：{{car.queue_minutes}}
       </td>
+      <td>
+        用电量：{{car.used_vol}}
+      </td>
+      <td>
+        费用：{{car.cost}}
+      </td>
 
     </tr>
     <tr>
@@ -54,7 +60,7 @@ export default {
     vm.current_id = route.params.id
     vm.get_data()
     vm.timer = setInterval(() => vm.get_data()
-      , 5000)
+      , 1000)
 
   },
   methods:{
@@ -63,7 +69,7 @@ export default {
       for(const i in this.message){
         if(this.message[i].id == search_id){
           this.current = this.message[i];
-          this.current_index = i;
+          this.current_index = parseInt(i);
           this.current_id = search_id
           break;
         }
@@ -81,7 +87,7 @@ export default {
               for(const i in response){
                 if(response[i].id == vm.current_id){
                   vm.current = response[i];
-                  vm.current_index = i;
+                  vm.current_index = parseInt(i);
                   break;
                 }
               }
@@ -101,6 +107,7 @@ export default {
       this.cars = this.current.in_service
     },
     next_one(event){
+      console.log(this.message.length, this.current_index)
       if(this.message.length <= this.current_index + 1){
         return
       }

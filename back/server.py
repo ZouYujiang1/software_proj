@@ -13,7 +13,7 @@ from flask_cors import CORS
 from sqlalchemy import func, true
 from backDB import DB, QueuingUser
 from dispatcher import Dispatcher, UserStatus
-
+import os
 
 # 实例化数据库
 db = DB()
@@ -134,7 +134,7 @@ def usrGetQueueNo():
     if usrInfo is None:
         print("---1")
         return json.dumps('The User: ' + str(usrName) + ' didn`t logon.')
-    if dispatcher.available is False:
+    if dispatcher.available() is False:
         return json.dumps('There are not enough spaces in the waiting area!')
 
     usrID = usrInfo['id']
@@ -143,16 +143,13 @@ def usrGetQueueNo():
     if usrQueueNo == -1:
         return json.dumps('The chargingMode could not be understood!')
     elif usrQueueNo == -2:
-<<<<<<< Updated upstream
-=======
         print('-2')
->>>>>>> Stashed changes
         return json.dumps('The user has been in the queue!')
     elif usrQueueNo == 0:
         return json.dumps('The account couldn`t be found!')
     # 向算法中添加排队信息
     dispatcher.addCar(usrQueueNo, usrName, chargingMode, requestVol)
-    print(usrName)
+    print(152, usrName)
     # 获取车辆状态
     carStatus, chargePileID = dispatcher.carStatus(usrName)
     # 获取前序车辆数
@@ -169,17 +166,11 @@ def usrCancel():
     carStatus, chargePileID = dispatcher.carStatus(usrName)
     if carStatus == 3:
         dispatcher.exitCar(usrName)
-<<<<<<< Updated upstream
-    elif carStatus == 2 or carStatus == 1:
-        dispatcher.exitCar(usrName)
-        db.deleteQueuingUser(usrName)
-=======
         return json.dumps("")
     elif carStatus == 2 or carStatus == 1:
         dispatcher.exitCar(usrName)
         db.deleteQueuingUser(usrName)
         return json.dumps("")
->>>>>>> Stashed changes
     elif carStatus == 0:
         return json.dumps({'msg': 'Please visit:' + url_for('usrEndCharging') + 'now!'})
 
@@ -216,13 +207,12 @@ def usrModifyChargingReq():
 @app.route("/usr/car-status", methods=['POST', 'GET'])
 def usrStatusPolling():
     usrID = request.json['id']
-    print(usrID)
     usrName = db.getUserInfo(usrID)['name']
-    print(usrName)
 
 
     # 获取车辆状态
     carStatus, chargePileID = dispatcher.carStatus(usrName)
+    print(usrName, 216, carStatus, chargePileID)
     # 等待中
 
     if carStatus == 3:
@@ -231,19 +221,22 @@ def usrStatusPolling():
         return json.dumps({'status':'waiting', 'carsAhead':dispatcher.carsAhead(usrName)})
     elif carStatus == 1:
         return json.dumps({'status':'charging-waiting', 'carsAhead':dispatcher.carsAhead(usrName)})
+    elif carStatus == 0:
+        if usrID not in usrActiveOrder.keys():
+            return json.dumps({'status':'charging', 'carsAhead': 0})
 
     # 已经开始充电
     orderID = usrActiveOrder[usrID]
     chargeMode = db.getQueuingUserInfo(usrID)['mode']
     # 充电完成
-    if actualVolUsed[orderID] >= usrRequestVol[orderID]:
-        return json.dumps({'status': 'charging-finished'})
+    if actualVolUsed[orderID] >= int(usrRequestVol[orderID]):
+        return json.dumps({'status': 'charging-finished', 'carsAhead': 0})
     # 充电中
     # 每1s一次轮询，时间比例1:10
     if chargeMode == 'F':
-        incVol = (const.QUICK_CHARGE_POWER) / 360  # 快充电量增值
+        incVol = (const.QUICK_CHARGE_POWER) / 36  # 快充电量增值
     elif chargeMode == 'T':
-        incVol = (const.SLOW_CHARGE_POWER) / 360  # 慢充电量增值
+        incVol = (const.SLOW_CHARGE_POWER) / 36  # 慢充电量增值
     actualVolUsed[orderID] += incVol
     actualChargeCost[orderID] += incVol * db.getVolPrice(datetime.now())
     return json.dumps({'status': 'charging', 'incVol': incVol})
@@ -251,6 +244,7 @@ def usrStatusPolling():
 
 @app.route("/usr/start-charging", methods=['POST', 'GET'])
 def usrStartCharging():
+    print(247, request.json)
     usrID = request.json['id']
     usrName = db.getUserInfo(usrID)['name']
     requestVol = request.json['requestVol']
@@ -280,15 +274,17 @@ def usrStartCharging():
 
 @app.route("/usr/end-charging", methods=['POST', 'GET'])
 def usrEndCharging():
+    print(280, request.json)
     usrID = request.json['id']
     usrName = db.getUserInfo(usrID)['name']
     orderID = usrActiveOrder[usrID]  # 获取usrID对应orderID
-
     # 计算充电时间
     chargingStartTime = db.getOrder(orderID=orderID)['startUpTime']
+    chargingStartTime = chargingStartTime.split('.')[0]
     pileID = db.getOrder(orderID=orderID)['idOfChargePile']
     chargingEndTime = datetime.now()
-    chargingTime = (chargingStartTime - chargingEndTime) / timedelta(minutes=1)
+    t = datetime.strptime(chargingStartTime, '%Y-%m-%d %H:%M:%S')
+    chargingTime = (t - chargingEndTime) / timedelta(minutes=1)
 
     dispatcher.exitCar(usrName)  # 从算法中删除
     db.setOrderWhenStopCharging(orderID = orderID,
@@ -315,7 +311,7 @@ def usrEndCharging():
     actualVolUsed.pop(orderID)  # 从实际电量中删除
     actualChargeCost.pop(orderID)  # 从电量计费中删除
     # FIXME:充电桩服务车辆信息表似乎会重复主键？
-    db.deleteServingCarInfo(usrID)  # 从充电桩服务车辆信息表（表六）中删除
+    db.deleteServingCarInfo(pileID, usrID)  # 从充电桩服务车辆信息表（表六）中删除
     db.deleteQueuingUser(usrID)  # 排队表（表一）中删除
 
     return json.dumps(str(db.getOrder(orderID)))
@@ -355,8 +351,7 @@ def adminGetChargerService():
     # 根据充电桩id整合数据
     info = json.loads(str(db.getAllServingCarInfo()))
     startChargingTime = json.loads(str(db.getAllOrderInfo()))  # startUpTime
-    getQueueNoTime = json.loads(str(db.getAllQueuingUserInfo())) # queueTime
-
+    getQueueNoTime = json.loads(str(db.getAllQueuingUserInfo()))  # queueTime
     # 测试数据
     # info = [{
     #     'id': '1',
@@ -371,13 +366,24 @@ def adminGetChargerService():
             if a['userID'] == b['id']:
                 # print(a['startUpTime'] - b['applyTime']) / timedelta(minutes=1)
                 temp = dict()
+                temp['cost'] = actualChargeCost.get(a['orderID'])
+                temp['used_vol'] = actualVolUsed.get(a['orderID'])
                 temp['client_id'] = b['id']
+                if type(a['startUpTime']) is str:
+                    ta = a['startUpTime'].split('.')[0]
+                    a['startUpTime'] = datetime.strptime(ta, '%Y-%m-%d %H:%M:%S')
+                if type(b['applyTime']) is str:
+                    tb = b['applyTime'].split('.')[0]
+                    b['applyTime'] = datetime.strptime(tb, '%Y-%m-%d %H:%M:%S')
                 temp['queue_minutes'] = (a['startUpTime'] - b['applyTime']) / timedelta(minutes=1)
                 t.append(temp)
     for inf in info:
         for temp in t:
             if inf['client_id'] == temp['client_id']:
                 inf['queue_minutes'] = temp['queue_minutes']
+                inf['cost'] = temp['cost']
+                inf['used_vol'] = temp['used_vol']
+
     ids = set()
     # 找到所有id
     for each in info:
@@ -392,6 +398,7 @@ def adminGetChargerService():
             if i['id'] == each:
                 item['in_service'].append(i)
         items.append(item)
+
     return json.dumps({'data': items})
 
 
