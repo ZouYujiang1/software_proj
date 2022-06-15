@@ -12,7 +12,8 @@ class UserStatus(object):
 
 
 class Dispatcher(object):
-    def __init__(self) -> None:
+    def __init__(self, db: backDB.DB) -> None:
+        self.db = db
         self.fast_queue = []  # 快充队列，保存用户名
         self.slow_queue = []  # 慢充队列，保存用户名
         self.fast_pri_queue = []  # 快充优先队列，保存用户名
@@ -54,7 +55,7 @@ class Dispatcher(object):
         Returns:
             bool: 有/无空位
         """
-        return self.waiting_fast_car + self.waiting_slow_car < backDB.DB.getWaitingAreaCapacity()
+        return self.waiting_fast_car + self.waiting_slow_car < self.db.getWaitingAreaCapacity()
 
     def addCar(self, waiting_number: int, username: str, charging_mode: str, request_vol: int) -> None:
         """向等待区添加车
@@ -320,7 +321,7 @@ class Dispatcher(object):
                 self.avai_fast_charger -= 1
 
     def __chargerQueueFull(self, charger_ID: int) -> bool:
-        return len(self.charger_queue[charger_ID]) == backDB.DB.getParkingSpace()
+        return len(self.charger_queue[charger_ID]) == self.db.getParkingSpace()
 
     def __batchDispatch(self, charging_mode: str) -> None:
         if charging_mode == 'T':
@@ -370,3 +371,14 @@ class Dispatcher(object):
                 charger_ID = self.__getCharger(charging_mode)
                 username = self.__getQueueFront('T')
                 self.__addToCharger(username, charging_mode, charger_ID)
+
+if __name__ == '__main__':
+    dispatcher = Dispatcher(backDB.DB())
+    dispatcher.db.init()
+    dispatcher.db.setParkingSpace(2)
+    dispatcher.db.setWaitingAreaCapacity(6)
+    dispatcher.newCharger(1, 'T')
+    dispatcher.addCar(1, '233', 'T', 3)
+    dispatcher.addCar(2, '455', 'T', 3)
+    print(dispatcher.carStatus('233'))
+    print(dispatcher.carStatus('455'))
