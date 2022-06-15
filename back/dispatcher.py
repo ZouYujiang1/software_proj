@@ -44,7 +44,6 @@ class Dispatcher(object):
             tuple[int, int]: 车辆状态 第一位：0：充电中 1：充电区等待中 2：等待队列中 3：优先等待队列中；第二位：充电桩ID
         """
         status = self.user_status[username].status
-        print(status)
         if status == -1:
             return 2, 0
         elif status == -2:
@@ -381,11 +380,9 @@ class Dispatcher(object):
 
 
 if __name__ == '__main__':
-    dispatcher = Dispatcher(backDB.DB())
-    dispatcher.db.init()
-    dispatcher.db.setParkingSpace(2)
-    dispatcher.db.setWaitingAreaCapacity(6)
-    dispatcher.newCharger(1, 'T')
+    db = backDB.DB()
+    db.init()
+    dispatcher = Dispatcher(db)
     dispatcher.addCar(1, '233', 'T', 3)
     dispatcher.addCar(2, '455', 'T', 3)
     print(dispatcher.carStatus('233'))
