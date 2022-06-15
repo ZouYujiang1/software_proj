@@ -1,7 +1,7 @@
 from cgitb import text
 from cmath import pi
 # from crypt import methods
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import json
 import const
 from tabnanny import check
@@ -13,8 +13,14 @@ from flask_cors import CORS
 from sqlalchemy import func, true
 from backDB import DB, QueuingUser
 from dispatcher import Dispatcher, UserStatus
+
+
+# 实例化数据库
 db = DB()
+# 初始化数据库
 db.init()
+
+# 实例化算法
 dispatcher = Dispatcher(db)
 app = Flask(__name__)
 # r'/*' 是通配符，让本服务器所有的 URL 都允许跨域请求
@@ -28,9 +34,12 @@ usrActiveOrder = {}
 # 请求电量
 # {orderID:requestVol}
 usrRequestVol = {}
-# 存储orderID中的实际充电量
+# 存储order中的实际充电量
 # {orderID:powerUsed}
 actualVolUsed = {}
+# 存储order中chargeCost
+# {orderID:chargeCost}
+actualChargeCost = {}
 
 
 # TODO:检查是否维护了所有的六张表
@@ -126,39 +135,38 @@ def usrGetQueueNo():
         print("---1")
         return json.dumps('The User: ' + str(usrName) + ' didn`t logon.')
     if dispatcher.available is False:
-        print("---2")
         return json.dumps('There are not enough spaces in the waiting area!')
 
     usrID = usrInfo['id']
     # 向数据库中添加排队信息
     usrQueueNo = db.addQueuingUser(usrID, usrName, chargingMode, requestVol, timeOfApplyingNo)
+    if usrQueueNo == -1:
+        return json.dumps('The chargingMode could not be understood!')
+    elif usrQueueNo == -2:
+        return json.dumps('The user has been in the queue!')
+    elif usrQueueNo == 0:
+        return json.dumps('The account couldn`t be found!')
     # 向算法中添加排队信息
     dispatcher.addCar(usrQueueNo, usrName, chargingMode, requestVol)
     # 获取车辆状态
     carStatus, chargePileID = dispatcher.carStatus(usrName)
     # 获取前序车辆数
     carsAhead = dispatcher.carsAhead(usrName)
-    print("---3")
-    print(usrQueueNo)
-    print(carStatus)
-    print(chargePileID)
-    print(carsAhead)
-    return json.dumps({'queueNo': usrQueueNo,
-                       'carStatus': carStatus,
-                       'chargePileID': chargePileID,
-                       'carsAhead': carsAhead})
-
+    return json.dumps({ 'queueNo' : usrQueueNo,
+                        'carStatus' : carStatus,
+                        'chargePileID' : chargePileID,
+                        'carsAhead' : carsAhead })
 
 @app.route("/usr/cancel", methods=['POST', 'GET'])
 def usrCancel():
     usrID = request.json['id']
     usrName = db.getUserInfo(usrID)['name']
-    carStatus, chargePileID = Dispatcher.carStatus(usrName)
+    carStatus, chargePileID = dispatcher.carStatus(usrName)
     if carStatus == 3:
-        Dispatcher.exitCar(usrName)
+        dispatcher.exitCar(usrName)
     elif carStatus == 2 or carStatus == 1:
-        Dispatcher.exitCar(usrName)
-        db.deleteQueuingUser()
+        dispatcher.exitCar(usrName)
+        db.deleteQueuingUser(usrName)
     elif carStatus == 0:
         return json.dumps({'msg': 'Please visit:' + url_for('usrEndCharging') + 'now!'})
 
@@ -167,26 +175,26 @@ def usrCancel():
 def usrModifyChargingReq():
     usrID = request.json['id']
     usrName = db.getUserInfo(usrID)['name']
-    carStatus, chargePileID = Dispatcher.carStatus(usrName)
+    carStatus, chargePileID = dispatcher.carStatus(usrName)
     requestVol = request.json['requestVol']
     chargeMode = db.getQueuingUserInfo(usrID)['mode']
     newChargeMode = request.json['chargeMode']
 
     if carStatus == 2 or carStatus == 3:
         if newChargeMode == chargeMode:
-            Dispatcher.changeChargePower(usrName, requestVol)
+            dispatcher.changeChargePower(usrName, requestVol)
             db.setRequestVol(usrID, requestVol)
             return json.dumps({'requestVol': requestVol})
         else:
             newQueueNo = db.setChargeMode(usrName, newChargeMode)
-            Dispatcher.exitCar(usrName)
-            Dispatcher.addCar(newQueueNo, usrName, newChargeMode, requestVol)
-            carStatus, chargePileID = Dispatcher.carStatus(usrName)
-            carsAhead = Dispatcher.carsAhead(usrName)
-            return json.dumps({'queueNo': newQueueNo,
-                               'carStatus': carStatus,
-                               'chargePileID': chargePileID,
-                               'carsAhead': carsAhead})
+            dispatcher.exitCar(usrName)
+            dispatcher.addCar(newQueueNo, usrName, newChargeMode, requestVol)
+            carStatus, chargePileID = dispatcher.carStatus(usrName)
+            carsAhead = dispatcher.carsAhead(usrName)
+            return json.dumps({ 'queueNo' : newQueueNo,
+                        'carStatus' : carStatus,
+                        'chargePileID' : chargePileID,
+                        'carsAhead' : carsAhead })
     elif carStatus == 0 or carStatus == 1:
         return json.dumps(
             {'msg': 'Fail to modify: Forbidden to modify in the charging-area!Please cancel and get a new queueno!'})
@@ -203,11 +211,11 @@ def usrStatusPolling():
     carStatus, chargePileID = dispatcher.carStatus(usrName)
     # 等待中
     if carStatus == 3:
-        return json.dumps({'status': 'prewaiting', 'carsAhead': dispatcher.carsAhead(usrName)})
+        return json.dumps({'status':'prewaiting', 'carsAhead':dispatcher.carsAhead(usrName)})
     elif carStatus == 2:
-        return json.dumps({'status': 'waiting', 'carsAhead': dispatcher.carsAhead(usrName)})
+        return json.dumps({'status':'waiting', 'carsAhead':dispatcher.carsAhead(usrName)})
     elif carStatus == 1:
-        return json.dumps({'status': 'charging-waiting', 'carsAhead': dispatcher.carsAhead(usrName)})
+        return json.dumps({'status':'charging-waiting', 'carsAhead':dispatcher.carsAhead(usrName)})
 
     # 已经开始充电
     orderID = usrActiveOrder[usrID]
@@ -216,12 +224,13 @@ def usrStatusPolling():
     if actualVolUsed[orderID] >= usrRequestVol[orderID]:
         return json.dumps({'status': 'charging-finished'})
     # 充电中
+    # 每1s一次轮询，时间比例1:10
     if chargeMode == 'F':
-        incVol = (const.QUICK_CHARGE_POWER) / 3600  # 快充电量增值
+        incVol = (const.QUICK_CHARGE_POWER) / 360  # 快充电量增值
     elif chargeMode == 'T':
-        incVol = (const.SLOW_CHARGE_POWER) / 3600  # 慢充电量增值
+        incVol = (const.SLOW_CHARGE_POWER) / 360  # 慢充电量增值
     actualVolUsed[orderID] += incVol
-
+    actualChargeCost[orderID] += incVol * db.getVolPrice(datetime.now())
     return json.dumps({'status': 'charging', 'incVol': incVol})
 
 
@@ -233,7 +242,7 @@ def usrStartCharging():
     startVol = request.json['startVol']
     carVol = request.json['carVol']
 
-    carStatus, chargePileID = Dispatcher.carStatus(usrName)
+    carStatus, chargePileID = dispatcher.carStatus(usrName)
     if carStatus == 3:
         return json.dumps({'msg': 'Request Fail: You are in the preWaitingQueue now!'})
     elif carStatus == 2:
@@ -245,6 +254,7 @@ def usrStartCharging():
         usrActiveOrder[usrID] = orderID  # 添至加运行时控制
         usrRequestVol[orderID] = requestVol  # 记录请求电量
         actualVolUsed[orderID] = 0  # 添加至用电计数
+        actualChargeCost[orderID] = 0.0  # 添加至用电计费
         db.setOrderWhenStartCharging(orderID=orderID,
                                      idOfChargePile=chargePileID,
                                      startUpTime=datetime.now(),
@@ -265,14 +275,14 @@ def usrEndCharging():
     chargingEndTime = datetime.now()
     chargingTime = (chargingStartTime - chargingEndTime) / timedelta(minutes=1)
 
-    Dispatcher.exitCar(usrName)  # 从算法中删除
-    db.setOrderWhenStopCharging(orderID=orderID,
-                                orderGenerationTime=datetime.now(),
-                                actualCharge=actualVolUsed[orderID],
-                                chargingTime=chargingTime,
-                                stopTime=chargingEndTime,
-                                chargingCost=actualVolUsed[orderID] * 0.7,
-                                serviceCost=actualVolUsed[orderID] * 0.8
+    dispatcher.exitCar(usrName)  # 从算法中删除
+    db.setOrderWhenStopCharging(orderID = orderID,
+                                orderGenerationTime = datetime.now(),
+                                actualCharge = actualVolUsed[orderID],
+                                chargingTime = chargingTime,
+                                stopTime = chargingEndTime,
+                                chargingCost = actualChargeCost[orderID],
+                                serviceCost = actualVolUsed[orderID] * 0.8
                                 )  # 设定结束充电的详单信息
 
     # 维护报表
@@ -280,7 +290,7 @@ def usrEndCharging():
     db.addTotalUsedTimes(pileID=pileID)
     db.addTotalUsedMinutes(pileID=pileID, timeToAdd=chargingTime)
     db.addTotalUsedVol(pileID=pileID, volToAdd=actualVolUsed[orderID])
-    db.addTotalChargeCost(pileID=pileID, costToAdd=actualVolUsed[orderID] * 0.7)
+    db.addTotalChargeCost(pileID=pileID, costToAdd=actualChargeCost[orderID])
     db.addTotalServiceCost(pileID=pileID, costToAdd=actualVolUsed[orderID] * 0.8)
 
     # 删除相关表中信息
@@ -288,6 +298,7 @@ def usrEndCharging():
     usrActiveOrder.pop(usrID)  # 从运行时控制中删除
     usrRequestVol.pop(orderID)  # 从请求电量中删除
     actualVolUsed.pop(orderID)  # 从实际电量中删除
+    actualChargeCost.pop(orderID)  # 从电量计费中删除
     # FIXME:充电桩服务车辆信息表似乎会重复主键？
     db.deleteServingCarInfo(usrID)  # 从充电桩服务车辆信息表（表六）中删除
     db.deleteQueuingUser(usrID)  # 排队表（表一）中删除
@@ -301,6 +312,11 @@ def usrGetOrderInfo():
     orderID = usrActiveOrder[usrID]
     return '{' + f'''"data": {str(db.getOrder(orderID))}''' + '}'
 
+
+@app.route("/usr/history-orders", methods=['POST', 'GET'])
+def usrGetHistoryOrders():
+    usrName = request.json['name']
+    return json.dumps({'data':db.getUsrHistoryOrders(usrName)})
 
 @app.route("/admin/usr-info", methods=['POST'])
 def adminUsrInfo():
@@ -338,9 +354,10 @@ def adminGetChargerService():
     for a in startChargingTime:
         for b in getQueueNoTime:
             if a['userID'] == b['id']:
+                # print(a['startUpTime'] - b['applyTime']) / timedelta(minutes=1)
                 temp = dict()
                 temp['client_id'] = b['id']
-                temp['queue_minutes'] = a['startUpTime'] - b['applyTime']
+                temp['queue_minutes'] = (a['startUpTime'] - b['applyTime']) / timedelta(minutes=1)
                 t.append(temp)
     for inf in info:
         for temp in t:
@@ -371,28 +388,28 @@ def adminGetChargerStatistic():
 @app.route("/admin/charger/open", methods=['POST', 'GET'])
 def adminChargeTurnOn():
     chargerID = request.json['chargerID']
-    Dispatcher.onCharger(chargerID)  # 算法模块中开启charger
+    dispatcher.onCharger(chargerID)  # 算法模块中开启charger
     return str(db.turnOnPile(chargerID))
 
 
 @app.route("/admin/charger/close", methods=['POST', 'GET'])
 def adminChargeTurnOff():
     chargerID = request.json['chargerID']
-    Dispatcher.offCharger(chargerID)  # 算法模块中关闭charger
+    dispatcher.offCharger(chargerID)  # 算法模块中关闭charger
     return str(db.turnOffPile((chargerID)))
 
 
 @app.route("/admin/charger/break", methods=['POST', 'GET'])
 def adminChargeBreak():
     chargerID = request.json['chargerID']
-    Dispatcher.offCharger(chargerID)  # 算法模块中关闭charger
+    dispatcher.offCharger(chargerID)  # 算法模块中关闭charger
     return str(db.setPileBroken(chargerID))
 
 
 @app.route("/admin/charger/fix", methods=['POST', 'GET'])
 def adminChargeFix():
     chargerID = request.json['chargerID']
-    Dispatcher.onCharger(chargerID)  # 算法模块中开启charger
+    dispatcher.onCharger(chargerID)  # 算法模块中开启charger
     return str(db.setPileWork(chargerID))
 
 
