@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import json
 
 import datetime
-import time
+from datetime import time, timedelta
 
 import const
 
@@ -197,7 +197,14 @@ Base.metadata.create_all()
 class DB(object):
     # 获取电价
     # TODO:根据输入时间获取当时电价
-    # def getVolPrice(self, datetime):
+    def getVolPrice(self, timeNow: datetime.datetime):
+        timeNowHour = timeNow.hour
+        if (timeNowHour >= 10 and timeNowHour < 15) or (timeNowHour >= 18 and timeNowHour < 21):
+            return const.HIGH_TIME_PRICE
+        elif (timeNowHour >= 7 and timeNowHour < 10)  or (timeNowHour >= 15 and timeNowHour < 18) or (timeNowHour >= 21 and timeNowHour < 23):
+            return const.MID_TIME_PRICE
+        elif (timeNowHour >= 0 and timeNowHour < 7) or (timeNowHour >= 23 and timeNowHour < 24):
+            return const.LOW_TIME_PRICE
 
     # 表三相关
     # 添加用户信息，成功则返回刚插入用户的id，失败返回-1
@@ -521,6 +528,13 @@ class DB(object):
     # 获取详单
     def getOrder(self, orderID):
         queryResult = session.query(ChargingOrder).filter(ChargingOrder.orderID == orderID).first()
+        if queryResult is not None:
+            return json.loads(queryResult.__repr__())
+        return queryResult
+
+    def getUsrHistoryOrders(self, nameOrID):
+        queryResult = session.query(ChargingOrder).filter(
+                or_(QueuingUser.userName == nameOrID, QueuingUser.userID == nameOrID)).all()
         if queryResult is not None:
             return json.loads(queryResult.__repr__())
         return queryResult
