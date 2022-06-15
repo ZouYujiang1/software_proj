@@ -444,6 +444,7 @@ def testInit():
 
 if __name__ == "__main__":
     db.init()
+    db.getAllUserInfo()
     # testInit()
 
     # testOrder()
@@ -451,7 +452,7 @@ if __name__ == "__main__":
     # testPile()
     # testReport()
     # testPile()
-    testUser()
+    # testUser()
     # testQueuingUser()
     # testEquipment()
 

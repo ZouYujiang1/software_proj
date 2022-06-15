@@ -920,27 +920,47 @@ class DB(object):
     def init(self):
         queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
         # 第一次打开
-        if queryResult is None:
-            # 初始化设备信息
-            equipmentInfo = EquipmentInfo()
-            session.add(equipmentInfo)
-            session.commit()
-            # 添加const里声明的快充和慢充数
-            # 添加快充
-            for i in range(const.QUICK_CHARGE_NUMBER):
-                DB.addPile(self, "F")
-            # 添加慢充
-            for i in range(const.SLOW_CHARGE_NUMBER):
-                DB.addPile(self, "T")
-
-            # 初始化管理员信息
-            Manager1 = User(name=const.NAME1, password=const.PWD1,identity="M")
-            session.add(Manager1)
+        if queryResult is not None:
+            session.delete(queryResult)
             session.commit()
 
-            Manager2 = User(name=const.NAME2, password=const.PWD2, identity="M")
-            session.add(Manager2)
-            session.commit()
+        # 初始化设备信息
+        equipmentInfo = EquipmentInfo()
+        session.add(equipmentInfo)
+        session.commit()
+        # 添加const里声明的快充和慢充数
+        # 添加快充
+        for i in range(const.QUICK_CHARGE_NUMBER):
+            DB.addPile(self, "F")
+        # 添加慢充
+        for i in range(const.SLOW_CHARGE_NUMBER):
+            DB.addPile(self, "T")
+
+        # 初始化管理员信息
+        Manager1 = User(name=const.NAME1, password=const.PWD1, identity="M")
+        session.add(Manager1)
+        session.commit()
+
+        Manager2 = User(name=const.NAME2, password=const.PWD2, identity="M")
+        session.add(Manager2)
+        session.commit()
+
+        User1 = User(name="3", password="1", identity="U")
+        session.add(User1)
+        session.commit()
+        User1 = User(name="4", password="1", identity="U")
+        session.add(User1)
+        session.commit()
+        User1 = User(name="5", password="1", identity="U")
+        session.add(User1)
+        session.commit()
+        User1 = User(name="6", password="1", identity="U")
+        session.add(User1)
+        session.commit()
+        User1 = User(name="7", password="1", identity="U")
+        session.add(User1)
+        session.commit()
+
 if __name__ == "__main__":
     db = DB()
     db.init()

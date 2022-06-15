@@ -1,13 +1,13 @@
 from cmath import inf
 from typing import Tuple
-import json
+
 import backDB
 
 
 class UserStatus(object):
     def __init__(self, waiting_number: int, request_vol: int, charging_mode: str, status: int = -1) -> None:
         self.waiting_number = waiting_number
-        self.request_vol = request_vol
+        self.request_vol = int(request_vol)
         self.charging_mode = charging_mode
         self.status = status  # -1：等待区 -2：优先等待区 >=0：充电区
 
@@ -31,7 +31,7 @@ class Dispatcher(object):
         self.charger_down_dispatch_mode = 0
 
         for i in range(1, db.getSlowChargeNumber()+db.getQuickChargeNumber()+1):
-            charger_info = json.loads(db.getPileInfo(i))
+            charger_info = db.getPileInfo(i)
             self.newCharger(i, charger_info["kind"])
 
     def carStatus(self, username: str) -> Tuple[int, int]:
@@ -44,6 +44,7 @@ class Dispatcher(object):
             tuple[int, int]: 车辆状态 第一位：0：充电中 1：充电区等待中 2：等待队列中 3：优先等待队列中；第二位：充电桩ID
         """
         status = self.user_status[username].status
+        print(status)
         if status == -1:
             return 2, 0
         elif status == -2:
@@ -71,6 +72,7 @@ class Dispatcher(object):
             charging_mode (str): 充电模式
             request_vol (int): 充电量
         """
+
         if charging_mode == 'T':
             self.user_status[username] = UserStatus(
                 waiting_number,  request_vol, charging_mode)
@@ -374,7 +376,7 @@ class Dispatcher(object):
         else:
             while self.waiting_fast_car != 0 and self.avai_fast_charger != 0:
                 charger_ID = self.__getCharger(charging_mode)
-                username = self.__getQueueFront('T')
+                username = self.__getQueueFront('F')
                 self.__addToCharger(username, charging_mode, charger_ID)
 
 
