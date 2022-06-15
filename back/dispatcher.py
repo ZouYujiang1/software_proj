@@ -1,6 +1,7 @@
 from cmath import inf
-import backDB
 from typing import Tuple
+import json
+import backDB
 
 
 class UserStatus(object):
@@ -8,7 +9,7 @@ class UserStatus(object):
         self.waiting_number = waiting_number
         self.request_vol = request_vol
         self.charging_mode = charging_mode
-        self.status = status # -1：等待区 -2：优先等待区 >=0：充电区
+        self.status = status  # -1：等待区 -2：优先等待区 >=0：充电区
 
 
 class Dispatcher(object):
@@ -28,6 +29,10 @@ class Dispatcher(object):
         self.avai_slow_charger = 0
         self.avai_fast_charger = 0
         self.charger_down_dispatch_mode = 0
+
+        for i in range(1, db.getSlowChargeNumber()+db.getQuickChargeNumber()+1):
+            charger_info = json.loads(db.getPileInfo(i))
+            self.newCharger(i, charger_info["kind"])
 
     def carStatus(self, username: str) -> Tuple[int, int]:
         """获取车辆状态
@@ -191,7 +196,7 @@ class Dispatcher(object):
             self.fast_queue = [i[1] for i in new_queue]
         self.__batchDispatch(charging_mode)
 
-    def offCharger(self, charger_ID: int)->None:
+    def offCharger(self, charger_ID: int) -> None:
         """充电桩故障
 
         Args:
@@ -371,6 +376,7 @@ class Dispatcher(object):
                 charger_ID = self.__getCharger(charging_mode)
                 username = self.__getQueueFront('T')
                 self.__addToCharger(username, charging_mode, charger_ID)
+
 
 if __name__ == '__main__':
     dispatcher = Dispatcher(backDB.DB())
