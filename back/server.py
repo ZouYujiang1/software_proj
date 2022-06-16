@@ -194,6 +194,7 @@ def usrModifyChargingReq():
             return json.dumps({'requestVol': requestVol})
         else:
             newQueueNo = db.setChargeMode(usrName, newChargeMode)
+            db.setRequestVol(usrName, requestVol)
             dispatcher.exitCar(usrName)
             dispatcher.addCar(newQueueNo, usrName, newChargeMode, requestVol)
             carStatus, chargePileID = dispatcher.carStatus(usrName)
