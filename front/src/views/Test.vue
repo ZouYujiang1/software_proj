@@ -66,11 +66,11 @@
                   </el-row>
                   <el-row>
                     <el-col :span="6">当前使用电量：</el-col>
-                    <el-col :span="5">{{ item.usedVol }}</el-col>
+                    <el-col :span="5">{{ item.usedVol.toFixed(2)  }}</el-col>
                   </el-row>
                   <el-row>
                     <el-col :span="6">当前费用：</el-col>
-                    <el-col :span="5">{{ item.usedCost }}</el-col>
+                    <el-col :span="5">{{ item.usedCost.toFixed(2)  }}</el-col>
                   </el-row>
                   <el-row>
                     <el-col :span="6">等待前车进度：</el-col>
@@ -198,7 +198,7 @@ export default {
     },
     startTest(i, order){
       var _this = this
-      _this.ceshi.push(order)
+
       switch (order.modeChoose){
         case 'A':
           _this.onSubmit(i, order)
@@ -246,6 +246,8 @@ export default {
             _this.list[i].carsAhead = data.carsAhead + ""
 
             _this.list[i].chargePileID = data.chargePileID
+            var str = order.name + '进入' + _this.area + '在' + order.time + '修改了' + order.requestVol + '充电量'
+            _this.ceshi.push(str)
             _this.timerList[i] = setInterval(function () {
               _this.perSecond(i)
             }, 1000)
@@ -267,6 +269,8 @@ export default {
       var _this = this
       axios.post('http://127.0.0.1:5000/usr/cancel', _this.list[index].order).then(
           function (response) {
+            var str = _this.list[index].order.name + '结束充电'
+            _this.ceshi.push(str)
             window.clearInterval(_this.timerList[index])
             window.clearInterval(_this.timerList2[index])
           }
@@ -396,6 +400,7 @@ export default {
       _this.vol = order.startVol
       axios.post('http://127.0.0.1:5000/usr/getqueueno', order).then(
           function (response) {
+
             let data = response.data
             _this.carStatus = data.carStatus
             _this.chargePileID = data.chargePileID
@@ -420,6 +425,8 @@ export default {
                 _this.area = "充电区"
                 break;
             }
+            var str = order.name + '进入' + _this.area + '在' + order.time + '申请了' + order.requestVol + '充电量'
+            _this.ceshi.push(str)
             var obj = {}
             obj.number = data.carsAhead + 1 + ""
             obj.carsAhead = data.carsAhead + ""
