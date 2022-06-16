@@ -82,36 +82,48 @@
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="isRunning == false" type="primary" @click="onSubmit">请求充电</el-button>
-                  <el-button v-else type="primary" @click="onSubmit" disabled>请求充电</el-button>
+                  <el-button v-if="isRunning == false" type="primary" @click="test">请求充电</el-button>
+                  <el-button v-else type="primary" @click="test" disabled>请求充电</el-button>
                   <el-button @click="cancle">结束充电</el-button>
                 </el-form-item>
               </el-form>
             </el-card>
-            <el-card style="margin-top: 20px">
+            <el-card v-for="item in list" v-if="item != null" style="margin-top: 20px; width: 500px;">
               <el-row>
-                <el-col :span="4">本车排队代码：</el-col>
-                <el-col :span="5">{{ number }}</el-col>
+                <el-col :span="6">车辆标号：</el-col>
+                <el-col :span="5">{{item.order.id - 2}}</el-col>
               </el-row>
               <el-row>
-                <el-col :span="4">前车等待数量：</el-col>
-                <el-col :span="5">{{ carsAhead }}</el-col>
+                <el-col :span="6">本车排队代码：</el-col>
+                <el-col :span="5">{{ item.number }}</el-col>
               </el-row>
               <el-row>
-                <el-col :span="4">当前所在区域：</el-col>
-                <el-col :span="5">{{ area }}</el-col>
+                <el-col :span="6">前车等待数量：</el-col>
+                <el-col :span="5">{{ item.carsAhead }}</el-col>
               </el-row>
               <el-row>
-                <el-col :span="4">预期使用充电桩：</el-col>
-                <el-col :span="5">{{ chargePileID }}</el-col>
+                <el-col :span="6">当前所在区域：</el-col>
+                <el-col :span="5">{{ item.area }}</el-col>
               </el-row>
               <el-row>
-                <el-col :span="4">等待前车进度：</el-col>
+                <el-col :span="6">使用充电桩：</el-col>
+                <el-col :span="5">{{ item.chargePileID }}</el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="6">当前使用电量：</el-col>
+                <el-col :span="5">{{ (item.usedVol).toFixed(2) }}</el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="6">当前费用：</el-col>
+                <el-col :span="5">{{ (item.usedCost).toFixed(2) }}</el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="6">等待前车进度：</el-col>
                 <el-col :span="5">
                   <el-progress
                       :text-inside="true"
                       :stroke-width="20"
-                      :percentage="car_per"
+                      :percentage="item.car_per"
                       status="exception"
                       color="blue"
                   >
@@ -120,25 +132,20 @@
                 </el-col>
               </el-row>
               <el-row>
-                <el-col :span="4">汽车充电进度：</el-col>
+                <el-col :span="6">汽车充电进度：</el-col>
                 <el-col :span="5">
-                  <el-progress type="dashboard" :percentage="ele_per">
+                  <el-progress type="dashboard" :percentage="item.ele_per" :indeterminate="true">
                     <template #default="{ percentage }">
-                      <span class="percentage-value">{{ percentage }}%</span>
+                      <span class="percentage-value">{{ percentage.toFixed(2) }}%</span>
 
                     </template>
                   </el-progress>
                 </el-col>
               </el-row>
-              <button>结束充电</button>
+              <button @click="endCharging(index)">结束充电</button>
             </el-card>
           </div>
-          <div>
-            {{menu}}
-          </div>
-          <div>
-            <button @click="test">test</button>
-          </div>
+
         </el-main>
       </el-container>
     </div>
@@ -191,7 +198,10 @@ export default {
       timer2: null,
       vol: 0,
       menu: {},
-      timerList: []
+      timerList: [],
+      timerList2: [],
+      list: [],
+      ceshi: []
     }
   },
   created() {
@@ -207,13 +217,128 @@ export default {
   methods: {
     test() {
       var _this = this
-      for (let i = 6; i <= 8; i++) {
-        _this.order.userName = i + ''
-        _this.order.id = i
-        _this.order.requestVol = 10
-        _this.order.chargingMode = 'F'
-        _this.onSubmit()
+
+      var temp = {
+            name: window.localStorage.getItem("userName"),
+            id: window.localStorage.getItem("id"),
+            requestVol : 0,
+            chargingMode : _this.order.chargingMode,
+            modeChoose : 'A',
+            time : '2022/6/16 9:10:00',
+            year : 2022,
+            month : 6,
+            day : 16,
+            hour : 9,
+            minute : 10,
+            second : 0,
+          }
+      _this.startTest(i, temp)
+
+
+
+    },
+    startTest(i, order){
+      var _this = this
+
+      switch (order.modeChoose){
+        case 'A':
+          if(order.chargingMode === 'O'){
+            _this.list.push(null)
+            let j,k;
+            for (k = 0; k < i; k++){
+              if(_this.testData[k].id === _this.testData[i].id){
+                j = k;
+                console.log(613, j)
+                break;
+              }
+            }
+            _this.endCharging(j)
+          }
+          else{
+            _this.onSubmit(i, order)
+          }
+          break;
+        case 'B':
+          _this.list.push(null)
+          _this.switch_broken(i, order)
+          break;
+        case 'C':
+          _this.list.push(null)
+          let j, k;
+          for (k = 0; k < i; k++){
+            if(_this.testData[k].id === _this.testData[i].id){
+              j = k;
+              console.log(613, j)
+              break;
+            }
+          }
+          _this.change(i, order, j)
+          break;
       }
+
+    },
+
+    switch_broken(i, order){
+      let _this = this;
+      if(order.name === 'F1'){
+        order.id = 1
+      }else {
+        order.id = 3
+      }
+      if(order.requestVol === 0){
+        axios.post('http://127.0.0.1:5000/admin/charger/break', {'chargerID': order.id}).then(
+            function (response){
+              if(response.data === 1){
+              }else {
+                console.log('ERROR!')
+              }
+            }
+        )
+      }
+      else{
+        axios.post('http://127.0.0.1:5000/admin/charger/fix', {'chargerID': order.id}).then(
+            function (response){
+              if(response.data === 1){
+              }else {
+                console.log('ERROR!')
+              }
+            }
+        )
+      }
+    },
+    change(i, order, j){
+
+      var _this = this
+      window.clearInterval(_this.timerList[j])
+      window.clearInterval(_this.timerList2[j])
+      axios.post('http://127.0.0.1:5000/usr/modify-chargingreq', _this.list[i].order).then(
+          function (response) {
+            switch (data.carStatus) {
+              case 3:
+                _this.list[j].area = "优先等待区"
+                break;
+              case 2:
+                _this.list[j].area = "等待区"
+                break;
+              case 1:
+                _this.list[j].area = "充电等待区"
+                break;
+              default:
+                _this.list[j].area = "充电区"
+                break;
+            }
+
+            _this.list[j].number = data.carsAhead + 1 + ""
+            _this.list[j].carsAhead = data.carsAhead + ""
+
+            _this.list[j].chargePileID = data.chargePileID
+            var s = (j+1) + '进入' + _this.area + '在' + order.time + '修改了' + order.requestVol + '充电量'
+            _this.ceshi.push(s)
+            _this.timerList[i] = setInterval(function () {
+              _this.perSecond(i)
+            }, 1000)
+          }
+      )
     },
     cancle() {
       var _this = this
@@ -221,25 +346,86 @@ export default {
           function (response) {
             window.clearInterval(_this.timer)
             window.clearInterval(_this.timer2)
-            console.log(response)
             _this.isRunning = false
           }
       )
     },
-    perSecond() {
-      const _this = this
-      axios.post('http://127.0.0.1:5000/usr/car-status', _this.order).then(
+    endCharging(index) {
+      console.log(index)
+      var _this = this
+      axios.post('http://127.0.0.1:5000/usr/cancel', _this.list[index].order).then(
           function (response) {
-            _this.carsAhead = response.data.carsAhead
-            console.log(_this.order.userName, response)
+            var str = (_this.list[index].order.id - 2) + '结束充电'
+            _this.ceshi.push(str)
+            window.clearInterval(_this.timerList[index])
+            window.clearInterval(_this.timerList2[index])
+            console.log(726, response.data)
+            if(response.data.msg !== 'success to cancel!'){
+              axios.post('http://127.0.0.1:5000/usr/end-charging', _this.list[index].order).then(
+                  function (response) {
+                    _this.list[index].area = '离开'
+                    _this.list[index].chargePileID = null
+                    _this.list[index].carsAhead = null
+                    _this.isRunning = false
+                    // _this.menu = response.data
+                  }
+              ).catch(
+                  function (err){
+                    console.log(err)
+                  }
+              )
+            }
+          }
+      )
+    },
+    perSecond(i) {
+      const _this = this
+      console.log(728, _this.list, _this.list[i], i)
+      axios.post('http://127.0.0.1:5000/usr/car-status', _this.list[i].order).then(
+          function (response) {
+            _this.list[i].carsAhead = response.data.carsAhead
+            console.log("V", i+1, response.data)
+            switch (response.data.carStatus) {
+              case 3:
+                _this.list[i].area = "优先等待区"
+                break;
+              case 2:
+                _this.list[i].area = "等待区"
+                break;
+              case 1:
+                _this.list[i].number = null
+                _this.list[i].carsAhead = null
+                _this.list[i].area = "充电等待区"
+                break;
+              default:
+                _this.list[i].area = "充电区"
+                break;
+            }
+            _this.list[i].chargePileID = response.data.chargePileID
+
             switch (response.data.status){
               case 'charging':
-                window.clearInterval(_this.timer)
-                axios.post('http://127.0.0.1:5000/usr/start-charging', _this.order).then(
+                window.clearInterval(_this.timerList[i])
+                axios.post('http://127.0.0.1:5000/usr/start-charging', _this.list[i].order).then(
                     function (response) {
-                      console.log(response.data)
-                      _this.timer2 = setInterval(function () {
-                        _this.perSecond2()
+                      _this.list[i].queueNo = null
+                      console.log("V", i+1, response.data)
+                      switch (response.data.carStatus) {
+                        case 3:
+                          _this.list[i].area = "优先等待区"
+                          break;
+                        case 2:
+                          _this.list[i].area = "等待区"
+                          break;
+                        case 1:
+                          _this.list[i].area = "充电等待区"
+                          break;
+                        default:
+                          _this.list[i].area = "充电区"
+                          break;
+                      }
+                      _this.timerList2[i] = setInterval(function () {
+                        _this.perSecond2(i)
                       }, 1000)
                     }
                 )
@@ -247,42 +433,77 @@ export default {
           }
       )
     },
-    perSecond2() {
+    perSecond2(i) {
       const _this = this
-      axios.post('http://127.0.0.1:5000/usr/car-status', _this.order).then(
+      axios.post('http://127.0.0.1:5000/usr/car-status', _this.list[i].order).then(
           function (response) {
-            _this.carsAhead = response.data.carsAhead
-            if (response.data.status == 'charging-finished'){
-              window.clearInterval(_this.timer2)
-              axios.post('http://127.0.0.1:5000/usr/end-charging', _this.order).then(
+            _this.list[i].number = null
+            _this.list[i].chargePileID = response.data.chargePileID
+            _this.list[i].usedVol = response.data.usedVol
+            _this.list[i].usedCost = response.data.usedCost
+            switch (response.data.carStatus) {
+              case 3:
+                _this.list[i].carsAhead = response.data.carsAhead
+                _this.list[i].area = "优先等待区"
+                break;
+              case 2:
+                _this.list[i].area = "等待区"
+                break;
+              case 1:
+                _this.list[i].number = null
+                _this.list[i].carsAhead = null
+                _this.list[i].area = "充电等待区"
+                break;
+              default:
+                _this.list[i].area = "充电区"
+                break;
+            }
+            if (response.data.status === 'charging-finished'){
+              _this.list[i].carsAhead = response.data.carsAhead
+              _this.list[i].chargePileID = response.data.chargePileID
+              window.clearInterval(_this.timerList2[i])
+              // _this.list[i] = null
+              console.log("V", i+1, response.data)
+              axios.post('http://127.0.0.1:5000/usr/end-charging', _this.list[i].order).then(
                   function (response) {
-                    console.log(_this.order.userName, response)
+                    console.log("V", i+1, response.data.status)
+                    _this.list[i].area = '离开'
+                    _this.list[i].chargePileID = null
+                    _this.list[i].carsAhead = null
                     _this.isRunning = false
                     _this.menu = response.data
                   }
+              ).catch(
+                  function (err){
+                    console.log(err)
+                  }
               )
-            } else {
-              _this.vol += response.data.incVol
-              _this.ele_per = (_this.vol / _this.order.carVol) * 100
             }
-            console.log(response)
+            else if (response.data.status === 'charging'){
+              _this.list[i].vol += response.data.incVol
+              _this.list[i].ele_per = (_this.list[i].vol / _this.list[i].carVol) * 100
             }
+            else if (response.data.status === 'prewaiting'){
+
+            }
+            else {
+
+            }
+          }
       )
     },
     handleSelect(key, keyPath) {
       this.index = key
-      console.log(this.index)
     },
-    onSubmit() {
+    onSubmit(i, order) {
       var mode = [100, 150, 200, 250, 300]
       var _this = this
       _this.order.carVol = mode[Math.floor(Math.random() * 5)]
-      _this.order.startVol = Math.floor(Math.random() * (_this.order.carVol + 1))
-      _this.vol = _this.order.startVol
-      console.log(this.order)
-      axios.post('http://127.0.0.1:5000/usr/getqueueno', _this.order).then(
+      _this.order.startVol = Math.floor(Math.random() * (order.carVol + 1))
+      _this.vol = order.startVol
+      axios.post('http://127.0.0.1:5000/usr/getqueueno', order).then(
           function (response) {
-            console.log(response)
+
             let data = response.data
             _this.carStatus = data.carStatus
             _this.chargePileID = data.chargePileID
@@ -293,7 +514,6 @@ export default {
             _this.car_per = (data.carsAhead + 1 - data.carsAhead) / (data.carsAhead + 1) * 100
             _this.ele_per = (_this.order.startVol / _this.order.carVol) * 100
             _this.isRunning = true
-            console.log(_this.car_per)
             switch (data.carStatus) {
               case 3:
                 _this.area = "优先等待区"
@@ -308,9 +528,29 @@ export default {
                 _this.area = "充电区"
                 break;
             }
+            var str = (order.id - 2) + '进入' + _this.area + '在' + order.time + '申请了' + order.requestVol + '充电量'
+            _this.ceshi.push(str)
+            var obj = {}
+            obj.number = data.carsAhead + 1 + ""
+            obj.carsAhead = data.carsAhead + ""
+            obj.area = _this.area
+            obj.chargePileID = data.chargePileID
+            obj.car_per = (data.carsAhead + 1 - data.carsAhead) / (data.carsAhead + 1) * 100
 
-            _this.timer = setInterval(function () {
-              _this.perSecond()
+            obj.carVol = mode[Math.floor(Math.random() * 5)]
+            obj.startVol = Math.floor(Math.random() * (obj.carVol + 1))
+            obj.ele_per = (obj.startVol / obj.carVol) * 100
+            obj.vol = obj.startVol
+            obj.order = order
+            obj.order.startVol = obj.startVol
+            obj.order.carVol = obj.carVol
+            obj.usedCost = 0
+            obj.usedVol = 0
+
+            _this.list.push(obj)
+            console.log(895, i, _this.list)
+            _this.timerList[i] = setInterval(function () {
+              _this.perSecond(i)
             }, 1000)
 
           }
