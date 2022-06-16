@@ -13,136 +13,92 @@
               background-color="#FFFFFF66"
               @select="handleSelect"
           >
-            <el-menu-item index="1">
-              <template #title>
-                <el-icon>
-                  <location/>
-                </el-icon>
-                <span>个人信息</span>
-              </template>
-            </el-menu-item>
-            <el-menu-item index="2">
-              <el-icon>
-                <icon-menu/>
-              </el-icon>
-              <span>充电详单</span>
-            </el-menu-item>
 
-            <el-menu-item index="3">
+
+            <el-menu-item index="1">
               <el-icon>
                 <icon-menu/>
               </el-icon>
-              <span>充电界面</span>
+              <span>测试界面</span>
             </el-menu-item>
 
           </el-menu>
+          <el-card>
+            <template #header>
+              <div class="card-header">
+                <span>测试用例</span>
+              </div>
+            </template>
+            <div v-for="(i, index) in ceshi" class="text item" style="padding-bottom: 20px">{{index}} : {{i}}</div>
+          </el-card>
         </el-aside>
         <el-main>
+
           <div v-if="index == 1">
-            <el-card>
-              <el-row>
-                <el-col :span="8">
-                  <el-avatar :size="100"
-                             src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"></el-avatar>
-                </el-col>
-              </el-row>
-              <el-form :model="form" label-width="120px" style="margin-top: 20px;">
-                <el-form-item label="用户名：">
-                  <div>{{ userName }}</div>
-                </el-form-item>
-              </el-form>
-            </el-card>
-          </div>
-          <div v-if="index == 2">
-            <el-card>
-              <el-row>
-                <el-col :span="8">
-                  <el-avatar :size="100"
-                             src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"></el-avatar>
-                </el-col>
-              </el-row>
-              <el-form :model="form" label-width="120px" style="margin-top: 20px;">
-                <el-form-item label="用户名：">
-                  <div>{{ userName }}</div>
-                </el-form-item>
-              </el-form>
-            </el-card>
-          </div>
-          <div v-if="index == 3">
-            <el-card>
-              <el-form :model="order" label-width="120px">
-                <el-form-item label="充电电量">
-                  <el-input v-model="order.requestVol"/>
-                </el-form-item>
-                <el-form-item label="充电模式">
-                  <el-select v-model="order.chargingMode" placeholder="请选择你的充电模式">
-                    <el-option label="快充" value="F"/>
-                    <el-option label="慢充" value="T"/>
-                  </el-select>
-                </el-form-item>
+            <el-row>
+              <el-col
 
-                <el-form-item>
-                  <el-button v-if="isRunning == false" type="primary" @click="onSubmit">请求充电</el-button>
-                  <el-button v-else type="primary" @click="onSubmit" disabled>请求充电</el-button>
-                  <el-button @click="cancle">结束充电</el-button>
-                </el-form-item>
-              </el-form>
-            </el-card>
-            <el-card v-for="(item,index) in list" style="margin-top: 20px">
-              <el-row>
-                <el-col :span="4">车辆标号：</el-col>
-                <el-col :span="5">{{index + 1}}</el-col>
-              </el-row>
-              <el-row>
-                <el-col :span="4">本车排队代码：</el-col>
-                <el-col :span="5">{{ item.number }}</el-col>
-              </el-row>
-              <el-row>
-                <el-col :span="4">前车等待数量：</el-col>
-                <el-col :span="5">{{ item.carsAhead }}</el-col>
-              </el-row>
-              <el-row>
-                <el-col :span="4">当前所在区域：</el-col>
-                <el-col :span="5">{{ item.area }}</el-col>
-              </el-row>
-              <el-row>
-                <el-col :span="4">（预期/正在）使用充电桩：</el-col>
-                <el-col :span="5">{{ item.chargePileID }}</el-col>
-              </el-row>
-              <el-row>
-                <el-col :span="4">等待前车进度：</el-col>
-                <el-col :span="5">
-                  <el-progress
-                      :text-inside="true"
-                      :stroke-width="20"
-                      :percentage="item.car_per"
-                      status="exception"
-                      color="blue"
-                  >
-                    <span>排队进度</span>
-                  </el-progress>
-                </el-col>
-              </el-row>
-              <el-row>
-                <el-col :span="4">汽车充电进度：</el-col>
-                <el-col :span="5">
-                  <el-progress type="dashboard" :percentage="item.ele_per" :indeterminate="true">
-                    <template #default="{ percentage }">
-                      <span class="percentage-value">{{ percentage.toFixed(2) }}%</span>
+                  :key="o"
+                  :span="10"
+                  :offset="index % 2 == 0 ? 0 : 2"
+                  v-for="(item,index) in list"
+              >
+                <el-card  style="margin-top: 20px; width: 500px;">
+                  <el-row>
+                    <el-col :span="6">车辆标号：</el-col>
+                    <el-col :span="5">{{index + 1}}</el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="6">本车排队代码：</el-col>
+                    <el-col :span="5">{{ item.number }}</el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="6">前车等待数量：</el-col>
+                    <el-col :span="5">{{ item.carsAhead }}</el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="6">当前所在区域：</el-col>
+                    <el-col :span="5">{{ item.area }}</el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="6">（预期/正在）使用充电桩：</el-col>
+                    <el-col :span="5">{{ item.chargePileID }}</el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="6">等待前车进度：</el-col>
+                    <el-col :span="5">
+                      <el-progress
+                          :text-inside="true"
+                          :stroke-width="20"
+                          :percentage="item.car_per"
+                          status="exception"
+                          color="blue"
+                      >
+                        <span>排队进度</span>
+                      </el-progress>
+                    </el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="6">汽车充电进度：</el-col>
+                    <el-col :span="5">
+                      <el-progress type="dashboard" :percentage="item.ele_per" :indeterminate="true">
+                        <template #default="{ percentage }">
+                          <span class="percentage-value">{{ percentage.toFixed(2) }}%</span>
 
-                    </template>
-                  </el-progress>
-                </el-col>
-              </el-row>
-              <button>结束充电</button>
-            </el-card>
+                        </template>
+                      </el-progress>
+                    </el-col>
+                  </el-row>
+                  <button @click="endCharging(index)">结束充电</button>
+                </el-card>
+              </el-col>
+            </el-row>
+
             <div>
               <button @click="test">test</button>
             </div>
           </div>
-          <div>
-            {{menu}}
-          </div>
+
 
         </el-main>
       </el-container>
@@ -198,7 +154,8 @@ export default {
       menu: {},
       timerList: [],
       timerList2: [],
-      list: []
+      list: [],
+      ceshi: []
     }
   },
   created() {
@@ -222,10 +179,29 @@ export default {
         temp.id = j
         temp.requestVol = 10
         temp.chargingMode = 'F'
-        _this.onSubmit(i, temp)
+        temp.modeChoose = 'A'
+        temp.time = '2022/6/16 13:56:00'
+
+        _this.startTest(i, temp)
+
         i ++
       }, 2000)
 
+    },
+    startTest(i, order){
+      var _this = this
+      _this.ceshi.push(order)
+      switch (order.modeChoose){
+        case 'A':
+          _this.onSubmit(i, order)
+          break;
+        case 'B':
+          _this.fix(i, order)
+          break;
+        case 'C':
+          _this.change(i, order)
+          break;
+      }
     },
     sleep(numberMillis) {
       var now = new Date();
@@ -236,7 +212,38 @@ export default {
           return true;
       }
     },
+    change(i, order){
 
+      var _this = this
+      window.clearInterval(_this.timerList[i])
+      window.clearInterval(_this.timerList2[i])
+      axios.post('http://127.0.0.1:5000/usr/modify-chargingreq', _this.list[i].order).then(
+          function (response) {
+            switch (data.carStatus) {
+              case 3:
+                _this.list[i].area = "优先等待区"
+                break;
+              case 2:
+                _this.list[i].area = "等待区"
+                break;
+              case 1:
+                _this.list[i].area = "充电等待区"
+                break;
+              default:
+                _this.list[i].area = "充电区"
+                break;
+            }
+
+            _this.list[i].number = data.carsAhead + 1 + ""
+            _this.list[i].carsAhead = data.carsAhead + ""
+
+            _this.list[i].chargePileID = data.chargePileID
+            _this.timerList[i] = setInterval(function () {
+              _this.perSecond(i)
+            }, 1000)
+          }
+      )
+    },
     cancle() {
       var _this = this
       axios.post('http://127.0.0.1:5000/usr/cancel', _this.order).then(
@@ -244,6 +251,16 @@ export default {
             window.clearInterval(_this.timer)
             window.clearInterval(_this.timer2)
             _this.isRunning = false
+          }
+      )
+    },
+    endCharging(index) {
+      console.log(index)
+      var _this = this
+      axios.post('http://127.0.0.1:5000/usr/cancel', _this.list[index].order).then(
+          function (response) {
+            window.clearInterval(_this.timerList[index])
+            window.clearInterval(_this.timerList2[index])
           }
       )
     },

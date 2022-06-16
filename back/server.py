@@ -458,7 +458,6 @@ def adminChargeFix():
     dispatcher.onCharger(chargerID)  # 算法模块中开启charger
     return str(db.setPileWork(chargerID))
 
-
 if __name__ == '__main__':
     print('HelloWorld')
     app.run(port='5000')
