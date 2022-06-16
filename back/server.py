@@ -1,8 +1,11 @@
+from calendar import month
 from cgitb import text
 from cmath import pi
 # from crypt import methods
 from datetime import date, datetime, timedelta
 import json
+
+from requests import RequestException
 import const
 from tabnanny import check
 from unittest import result
@@ -166,11 +169,11 @@ def usrCancel():
     carStatus, chargePileID = dispatcher.carStatus(usrName)
     if carStatus == 3:
         dispatcher.exitCar(usrName)
-        return json.dumps("")
+        return json.dumps({'msg': 'success to cancel!'})
     elif carStatus == 2 or carStatus == 1:
         dispatcher.exitCar(usrName)
         db.deleteQueuingUser(usrName)
-        return json.dumps("")
+        return json.dumps({'msg': 'success to cancel!'})
     elif carStatus == 0:
         return json.dumps({'msg': 'Please visit:' + url_for('usrEndCharging') + 'now!'})
 
@@ -250,7 +253,6 @@ def usrStartCharging():
     startVol = request.json['startVol']
     carVol = request.json['carVol']
     print(int(usrName) - 2, "start-charging")
-
     carStatus, chargePileID = dispatcher.carStatus(usrName)
     if carStatus == 3:
         return json.dumps({'msg': 'Request Fail: You are in the preWaitingQueue now!'})
@@ -264,9 +266,20 @@ def usrStartCharging():
         usrRequestVol[orderID] = requestVol  # 记录请求电量
         actualVolUsed[orderID] = 0  # 添加至用电计数
         actualChargeCost[orderID] = 0.0  # 添加至用电计费
+
+        startUpTime=datetime.now()  # 默认使用系统时间作为开始充电时间
+        # 测试时前段会传递开始时间
+        if 'year' in request.json.__dict__.keys():
+            startUpTime = datetime(year=int(request.json['year']),
+                                    month=int(request.json['month']),
+                                    day=int(request.json['day']),
+                                    hour=int(request.json['hour']),
+                                    minute=int(request.json['minute']),
+                                    second=int(request.json['second']))
+
         db.setOrderWhenStartCharging(orderID=orderID,
                                      idOfChargePile=chargePileID,
-                                     startUpTime=datetime.now(),
+                                     startUpTime=startUpTime,
                                      startingVol=startVol)  # 初始化详单字段
         db.addServingCarInfo(chargePileID, usrID, carVol)
         return json.dumps({'orderID': orderID})
@@ -282,7 +295,17 @@ def usrEndCharging():
     chargingStartTime = db.getOrder(orderID=orderID)['startUpTime']
     chargingStartTime = chargingStartTime.split('.')[0]
     pileID = db.getOrder(orderID=orderID)['idOfChargePile']
+
+    # 默认使用系统时间作为结束时间
     chargingEndTime = datetime.now()
+    # 测试时前段会传递结束时间
+    if 'year' in request.json.__dict__.keys():
+        chargingEndTime = datetime(year=int(request.json['year']),
+                                month=int(request.json['month']),
+                                day=int(request.json['day']),
+                                hour=int(request.json['hour']),
+                                minute=int(request.json['minute']),
+                                second=int(request.json['second']))
     t = datetime.strptime(chargingStartTime, '%Y-%m-%d %H:%M:%S')
     chargingTime = (t - chargingEndTime) / timedelta(minutes=1)
 
