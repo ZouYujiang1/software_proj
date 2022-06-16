@@ -962,25 +962,10 @@ class DB(object):
         session.add(Manager2)
         session.commit()
 
-        User1 = User(name="3", password="1", identity="U")
-        session.add(User1)
-        session.commit()
-        User1 = User(name="4", password="1", identity="U")
-        session.add(User1)
-        session.commit()
-        User1 = User(name="5", password="1", identity="U")
-        session.add(User1)
-        session.commit()
-        User1 = User(name="6", password="1", identity="U")
-        session.add(User1)
-        session.commit()
-        User1 = User(name="7", password="1", identity="U")
-        session.add(User1)
-        session.commit()
-
-        User1 = User(name="8", password="1", identity="U")
-        session.add(User1)
-        session.commit()
+        for i in range(30):
+            User1 = User(name=str(i + 3), password="1", identity="U")
+            session.add(User1)
+            session.commit()
 
 if __name__ == "__main__":
     db = DB()

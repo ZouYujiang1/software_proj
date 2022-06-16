@@ -21,12 +21,12 @@
       <td>
         排队时间（分钟）：{{car.queue_minutes}}
       </td>
-      <td>
-        用电量：{{car.used_vol}}
-      </td>
-      <td>
-        费用：{{car.cost}}
-      </td>
+<!--      <td>-->
+<!--        用电量：{{car.used_vol}}-->
+<!--      </td>-->
+<!--      <td>-->
+<!--        费用：{{car.cost}}-->
+<!--      </td>-->
 
     </tr>
     <tr>
