@@ -253,16 +253,6 @@ def usrStartCharging():
     requestVol = request.json['requestVol']
     startVol = request.json['startVol']
     carVol = request.json['carVol']
-
-    if 'year' in request.json.__dict__.keys():
-        test_startUpTime = datetime(year=int(request.json['year']),
-                                    month=int(request.json['month']),
-                                    day=int(request.json['day']),
-                                    hour=int(request.json['hour']),
-                                    minute=int(request.json['minute']),
-                                    second=int(request.json['second']))
-
-
     carStatus, chargePileID = dispatcher.carStatus(usrName)
     if carStatus == 3:
         return json.dumps({'msg': 'Request Fail: You are in the preWaitingQueue now!'})
@@ -276,6 +266,7 @@ def usrStartCharging():
         usrRequestVol[orderID] = requestVol  # 记录请求电量
         actualVolUsed[orderID] = 0  # 添加至用电计数
         actualChargeCost[orderID] = 0.0  # 添加至用电计费
+
         startUpTime=datetime.now()  # 默认使用系统时间作为开始充电时间
         # 测试时前段会传递开始时间
         if 'year' in request.json.__dict__.keys():
@@ -285,6 +276,7 @@ def usrStartCharging():
                                     hour=int(request.json['hour']),
                                     minute=int(request.json['minute']),
                                     second=int(request.json['second']))
+
         db.setOrderWhenStartCharging(orderID=orderID,
                                      idOfChargePile=chargePileID,
                                      startUpTime=startUpTime,
@@ -303,6 +295,7 @@ def usrEndCharging():
     chargingStartTime = db.getOrder(orderID=orderID)['startUpTime']
     chargingStartTime = chargingStartTime.split('.')[0]
     pileID = db.getOrder(orderID=orderID)['idOfChargePile']
+
     # 默认使用系统时间作为结束时间
     chargingEndTime = datetime.now()
     # 测试时前段会传递结束时间
