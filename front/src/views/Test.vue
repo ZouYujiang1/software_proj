@@ -61,16 +61,16 @@
                     <el-col :span="5">{{ item.area }}</el-col>
                   </el-row>
                   <el-row>
-                    <el-col :span="6">（预期/正在）使用充电桩：</el-col>
+                    <el-col :span="6">使用充电桩：</el-col>
                     <el-col :span="5">{{ item.chargePileID }}</el-col>
                   </el-row>
                   <el-row>
                     <el-col :span="6">当前使用电量：</el-col>
-                    <el-col :span="5">{{ item.usedVol.toFixed(2)  }}</el-col>
+                    <el-col :span="5">{{ item.usedVol.toFixed(2) }}</el-col>
                   </el-row>
                   <el-row>
                     <el-col :span="6">当前费用：</el-col>
-                    <el-col :span="5">{{ item.usedCost.toFixed(2)  }}</el-col>
+                    <el-col :span="5">{{ item.usedCost.toFixed(2) }}</el-col>
                   </el-row>
                   <el-row>
                     <el-col :span="6">等待前车进度：</el-col>

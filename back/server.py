@@ -243,7 +243,7 @@ def usrStatusPolling():
         incVol = (const.SLOW_CHARGE_POWER) / 36  # 慢充电量增值
     actualVolUsed[orderID] += incVol
     actualChargeCost[orderID] += incVol * db.getVolPrice(datetime.now())
-    return json.dumps({'carStatus': carStatus, 'status': 'charging', 'incVol': incVol, 'chargePileID': chargePileID})
+    return json.dumps({'carStatus': carStatus, 'status': 'charging', 'incVol': incVol, 'chargePileID': chargePileID, 'usedVol': actualVolUsed[orderID], 'usedCost': actualChargeCost[orderID]})
 
 
 @app.route("/usr/start-charging", methods=['POST', 'GET'])
