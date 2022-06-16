@@ -65,6 +65,14 @@
                     <el-col :span="5">{{ item.chargePileID }}</el-col>
                   </el-row>
                   <el-row>
+                    <el-col :span="6">当前使用电量：</el-col>
+                    <el-col :span="5">{{ item.usedVol }}</el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="6">当前费用：</el-col>
+                    <el-col :span="5">{{ item.usedCost }}</el-col>
+                  </el-row>
+                  <el-row>
                     <el-col :span="6">等待前车进度：</el-col>
                     <el-col :span="5">
                       <el-progress
@@ -324,6 +332,8 @@ export default {
           function (response) {
             _this.list[i].number = null
             _this.list[i].chargePileID = response.data.chargePileID
+            _this.list[i].usedVol = response.data.usedVol
+            _this.list[i].usedCost = response.data.usedCost
             switch (response.data.carStatus) {
               case 3:
                 _this.list[i].carsAhead = response.data.carsAhead
@@ -424,6 +434,9 @@ export default {
             obj.order = order
             obj.order.startVol = obj.startVol
             obj.order.carVol = obj.carVol
+            obj.usedCost = 0
+            obj.usedVol = 0
+
             _this.list.push(obj)
             _this.timerList[i] = setInterval(function () {
               _this.perSecond(i)
