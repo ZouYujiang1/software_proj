@@ -170,6 +170,8 @@ class Dispatcher(object):
             for k, v in self.charger_queue.items():
                 if k == charger_ID or self.charger_mode[k] != charging_mode:
                     continue
+                if self.__chargerQueueFull(k):
+                    self.avai_slow_charger += 1
                 while len(v) > 1:
                     username = v.pop()
                     self.user_status[username].status = -1
@@ -187,6 +189,8 @@ class Dispatcher(object):
             for k, v in self.charger_queue.items():
                 if k == charger_ID or self.charger_mode[k] != charging_mode:
                     continue
+                if self.__chargerQueueFull(k):
+                    self.avai_fast_charger += 1
                 while len(v) > 1:
                     username = v.pop()
                     self.user_status[username].status = -1
@@ -220,6 +224,8 @@ class Dispatcher(object):
                 for k, v in self.charger_queue.items():
                     if k == charger_ID or self.charger_mode[k] != charging_mode:
                         continue
+                    if self.__chargerQueueFull(k):
+                        self.avai_slow_charger += 1
                     while len(v) > 1:
                         username = v.pop()
                         self.user_status[username].status = -1
@@ -245,6 +251,8 @@ class Dispatcher(object):
                 for k, v in self.charger_queue.items():
                     if k == charger_ID or self.charger_mode[k] != charging_mode:
                         continue
+                    if self.__chargerQueueFull(k):
+                        self.avai_fast_charger += 1
                     while len(v) > 1:
                         username = v.pop()
                         self.user_status[username].status = -1
@@ -331,6 +339,8 @@ class Dispatcher(object):
         return len(self.charger_queue[charger_ID]) == self.db.getParkingSpace()
 
     def __batchDispatch(self, charging_mode: str) -> None:
+        self.__dispatch(charging_mode)
+        return
         if charging_mode == 'T':
             charging_list = []
             for username in self.slow_queue:
@@ -344,8 +354,8 @@ class Dispatcher(object):
                     self.slow_pri_queue.remove(username)
                     self.__addToCharger(username, charging_mode, charger_ID)
                 while not self.__chargerQueueFull(charger_ID):
-                    username = charging_list[0]
-                    charging_list.remove(username)
+                    username = charging_list[0][1]
+                    charging_list.pop(0)
                     self.slow_queue.remove(username)
                     self.__addToCharger(username, charging_mode, charger_ID)
         else:
@@ -361,8 +371,8 @@ class Dispatcher(object):
                     self.fast_pri_queue.remove(username)
                     self.__addToCharger(username, charging_mode, charger_ID)
                 while not self.__chargerQueueFull(charger_ID):
-                    username = charging_list[0]
-                    charging_list.remove(username)
+                    username = charging_list[0][1]
+                    charging_list.pop(0)
                     self.fast_queue.remove(username)
                     self.__addToCharger(username, charging_mode, charger_ID)
 
@@ -389,11 +399,17 @@ if __name__ == '__main__':
     dispatcher.addCar(3, '3', 'F', 3)
     dispatcher.addCar(4, '4', 'F', 3)
     dispatcher.addCar(5, '5', 'F', 3)
+    dispatcher.addCar(6, '6', 'F', 3)
+    dispatcher.offCharger(1)
+    print(dispatcher.fast_pri_queue)
+    print(dispatcher.fast_queue)
+    for i in range(5):
+        print(i+1, dispatcher.carStatus(str(i+1)))
     dispatcher.exitCar('1')
-    print(dispatcher.carStatus('5'))
-    dispatcher.exitCar('2')
-    dispatcher.exitCar('3')
-    dispatcher.exitCar('4')
-    print(dispatcher.carStatus('5'))
-
-
+    print(dispatcher.fast_pri_queue)
+    print(dispatcher.fast_queue)
+    for i in range(1,5):
+        print(i+1, dispatcher.carStatus(str(i+1)))
+    dispatcher.onCharger(1)
+    for i in range(1,5):
+        print(i+1, dispatcher.carStatus(str(i+1)))
