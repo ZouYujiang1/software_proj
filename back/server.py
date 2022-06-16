@@ -238,9 +238,9 @@ def usrStatusPolling():
     # 充电中
     # 每1s一次轮询，时间比例1:10
     if chargeMode == 'F':
-        incVol = (const.QUICK_CHARGE_POWER) / 36  # 快充电量增值
+        incVol = (const.QUICK_CHARGE_POWER) / 60  # 快充电量增值
     elif chargeMode == 'T':
-        incVol = (const.SLOW_CHARGE_POWER) / 36  # 慢充电量增值
+        incVol = (const.SLOW_CHARGE_POWER) / 60  # 慢充电量增值
     actualVolUsed[orderID] += incVol
     actualChargeCost[orderID] += incVol * db.getVolPrice(datetime.now())
     return json.dumps({'carStatus': carStatus, 'status': 'charging', 'incVol': incVol, 'chargePileID': chargePileID, 'usedVol': actualVolUsed[orderID], 'usedCost': actualChargeCost[orderID]})

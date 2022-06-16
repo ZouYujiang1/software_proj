@@ -29,7 +29,7 @@
                 <span>测试用例</span>
               </div>
             </template>
-            <div v-for="(i, index) in ceshi" class="text item" style="padding-bottom: 20px">{{index}} : {{i}}</div>
+            <div v-for="(i, index) in ceshi" class="text item" style="padding-bottom: 20px">{{i}}</div>
           </el-card>
         </el-aside>
         <el-main>
@@ -43,10 +43,10 @@
                   :offset="index % 2 == 0 ? 0 : 2"
                   v-for="(item,index) in list"
               >
-                <el-card  style="margin-top: 20px; width: 500px;">
+                <el-card  v-if="item != null" style="margin-top: 20px; width: 500px;">
                   <el-row>
                     <el-col :span="6">车辆标号：</el-col>
-                    <el-col :span="5">{{index + 1}}</el-col>
+                    <el-col :span="5">{{item.order.id - 2}}</el-col>
                   </el-row>
                   <el-row>
                     <el-col :span="6">本车排队代码：</el-col>
@@ -66,11 +66,11 @@
                   </el-row>
                   <el-row>
                     <el-col :span="6">当前使用电量：</el-col>
-                    <el-col :span="5">{{ item.usedVol.toFixed(2) }}</el-col>
+                    <el-col :span="5">{{ (item.usedVol).toFixed(2) }}</el-col>
                   </el-row>
                   <el-row>
                     <el-col :span="6">当前费用：</el-col>
-                    <el-col :span="5">{{ item.usedCost.toFixed(2) }}</el-col>
+                    <el-col :span="5">{{ (item.usedCost).toFixed(2) }}</el-col>
                   </el-row>
                   <el-row>
                     <el-col :span="6">等待前车进度：</el-col>
@@ -163,7 +163,413 @@ export default {
       timerList: [],
       timerList2: [],
       list: [],
-      ceshi: []
+      ceshi: [],
+      testData:[
+        {
+          name: '3', id: 3, requestVol : 40, chargingMode : 'T', modeChoose : 'A',
+          time : '2022/6/16 6:00:00', year : 2022, month : 6, day : 16,
+          hour : 6,
+          minute : 0,
+          second : 0,
+        },
+        {
+          name: '4', id: 4, requestVol : 30, chargingMode : 'T', modeChoose : 'A',
+          time : '2022/6/16 6:05:00', year : 2022, month : 6, day : 16,
+          hour : 6,
+          minute : 5,
+          second : 0,
+        },
+        {
+          name: '5', id: 5, requestVol : 100, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 6:10:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 6,
+          minute : 10,
+
+        },
+        {
+          name: '6', id: 6, requestVol : 120, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 6:15:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 6,
+          minute : 15,
+
+        },
+        {
+          name: '4', id: 4, requestVol : 0, chargingMode : 'O', modeChoose : 'A',
+          time : '2022/6/16 6:20:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 6,
+          minute : 20,
+
+        },
+        {
+          name: '7', id: 7, requestVol : 20, chargingMode : 'T', modeChoose : 'A',
+          time : '2022/6/16 6:25:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 6,
+          minute : 25,
+
+        },
+        {
+          name: '8', id: 8, requestVol : 20, chargingMode : 'T', modeChoose : 'A',
+          time : '2022/6/16 6:30:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 6,
+          minute : 30,
+
+        },
+        {
+          name: '9', id: 9, requestVol : 110, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 6:35:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 6,
+          minute : 35,
+
+        },
+        {
+          name: '10', id: 10, requestVol : 20, chargingMode : 'T', modeChoose : 'A',
+          time : '2022/6/16 6:40:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 6,
+          minute : 40,
+
+        },
+        {
+          name: '11', id: 11, requestVol : 105, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 6:45:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 6,
+          minute : 45,
+
+        },
+        {
+          name: '12', id: 12, requestVol : 10, chargingMode : 'T', modeChoose : 'A',
+          time : '2022/6/16 6:50:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 6,
+          minute : 50,
+
+        },
+        {
+          name: '13', id: 13, requestVol : 110, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 6:55:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 6,
+          minute : 55,
+
+        },
+        {
+          name: '14', id: 14, requestVol : 90, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 7:00:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 7,
+          minute : 0,
+
+        },
+        {
+          name: '15', id: 15, requestVol : 110, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 7:05:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 7,
+          minute : 5,
+
+        },
+        {
+          name: '16', id: 16, requestVol : 95, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 7:10:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 7,
+          minute : 10,
+
+        },
+        {
+          name: '17', id: 17, requestVol : 10, chargingMode : 'T', modeChoose : 'A',
+          time : '2022/6/16 7:15:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 7,
+          minute : 15,
+
+        },
+        {
+          name: '18', id: 18, requestVol : 60, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 7:20:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 7,
+          minute : 20,
+
+        },
+        {
+          name: '19', id: 19, requestVol : 10, chargingMode : 'T', modeChoose : 'A',
+          time : '2022/6/16 7:25:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 7,
+          minute : 25,
+
+        },
+        {
+          name: '20', id: 20, requestVol : 7.5, chargingMode : 'T', modeChoose : 'A',
+          time : '2022/6/16 7:30:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 7,
+          minute : 30,
+
+        },
+        {
+          name: '21', id: 21, requestVol : 75, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 7:35:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 7,
+          minute : 35,
+
+        },
+        {
+          name: '22', id: 22, requestVol : 95, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 7:40:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 7,
+          minute : 40,
+
+        },
+        {
+          name: '23', id: 23, requestVol : 95, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 7:45:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 7,
+          minute : 45,
+
+        },
+        {
+          name: '24', id: 24, requestVol : 70, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 7:50:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 7,
+          minute : 50,
+
+        },
+        {
+          name: '25', id: 25, requestVol : 80, chargingMode : 'F', modeChoose : 'A',
+          time : '2022/6/16 7:55:00', year : 2022, month : 6, day : 16,second : 0,
+          hour : 7,
+          minute : 55,
+
+        },
+        {
+          name: '26',
+          id: 26,
+          requestVol : 5,
+          chargingMode : 'T',
+          modeChoose : 'A',
+          time : '2022/6/16 8:00:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 8,
+          minute : 0,
+          second : 0,
+        },{
+          name: '27',
+          id: 27,
+          requestVol : 15,
+          chargingMode : 'T',
+          modeChoose : 'A',
+          time : '2022/6/16 8:20:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 8,
+          minute : 20,
+          second : 0,
+        },{
+          name: 'T1',
+          id: 111,
+          requestVol : 0,
+          chargingMode : 'O',
+          modeChoose : 'B',
+          time : '2022/6/16 8:25:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 8,
+          minute : 25,
+          second : 0,
+        },{
+          name: '28',
+          id: 28,
+          requestVol : 20,
+          chargingMode : 'T',
+          modeChoose : 'A',
+          time : '2022/6/16 8:30:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 8,
+          minute : 30,
+          second : 0,
+        },{
+          name: '29',
+          id: 29,
+          requestVol : 25,
+          chargingMode : 'T',
+          modeChoose : 'A',
+          time : '2022/6/16 8:35:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 8,
+          minute : 35,
+          second : 0,
+        },{
+          name: 'F1',
+          id: 101,
+          requestVol : 5,
+          chargingMode : 'O',
+          modeChoose : 'B',
+          time : '2022/6/16 8:50:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 8,
+          minute : 50,
+          second : 0,
+        },{
+          name: '30',
+          id: 30,
+          requestVol : 30,
+          chargingMode : 'F',
+          modeChoose : 'A',
+          time : '2022/6/16 9:00:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 9,
+          minute : 0,
+          second : 0,
+        },{
+          name: '3',
+          id: 3,
+          requestVol : 0,
+          chargingMode : 'O',
+          modeChoose : 'A',
+          time : '2022/6/16 9:10:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 9,
+          minute : 10,
+          second : 0,
+        },{
+          name: 'T1',
+          id: 111,
+          requestVol : 1,
+          chargingMode : 'O',
+          modeChoose : 'B',
+          time : '2022/6/16 9:15:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 9,
+          minute : 15,
+          second : 0,
+        },{
+          name: '29',
+          id: 29,
+          requestVol : 0,
+          chargingMode : 'O',
+          modeChoose : 'A',
+          time : '2022/6/16 9:20:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 9,
+          minute : 20,
+          second : 0,
+        },{
+          name: '23',
+          id: 23,
+          requestVol : 35,
+          chargingMode : 'F',
+          modeChoose : 'C',
+          time : '2022/6/16 9:25:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 9,
+          minute : 25,
+          second : 0,
+        },{
+          name: '21',
+          id: 21,
+          requestVol : 0,
+          chargingMode : 'O',
+          modeChoose : 'A',
+          time : '2022/6/16 9:30:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 9,
+          minute : 30,
+          second : 0,
+        },{
+          name: '30',
+          id: 30,
+          requestVol : 0,
+          chargingMode : 'O',
+          modeChoose : 'A',
+          time : '2022/6/16 9:35:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 9,
+          minute : 35,
+          second : 0,
+        },{
+          name: '25',
+          id: 25,
+          requestVol : 40,
+          chargingMode : 'F',
+          modeChoose : 'C',
+          time : '2022/6/16 9:40:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 9,
+          minute : 40,
+          second : 0,
+        },{
+          name: '31',
+          id: 31,
+          requestVol : 30,
+          chargingMode : 'T',
+          modeChoose : 'A',
+          time : '2022/6/16 9:50:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 9,
+          minute : 50,
+          second : 0,
+        },{
+          name: '16',
+          id: 16,
+          requestVol : 30,
+          chargingMode : 'F',
+          modeChoose : 'C',
+          time : '2022/6/16 9:55:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 9,
+          minute :55,
+          second : 0,
+        },{
+          name: '32',
+          id: 32,
+          requestVol : 10,
+          chargingMode : 'T',
+          modeChoose : 'A',
+          time : '2022/6/16 10:00:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 10,
+          minute : 0,
+          second : 0,
+        },{
+          name: 'F1',
+          id: 101,
+          requestVol : 1,
+          chargingMode : 'O',
+          modeChoose : 'B',
+          time : '2022/6/16 10:50:00',
+          year : 2022,
+          month : 6,
+          day : 16,
+          hour : 10,
+          minute : 50,
+          second : 0,
+        }
+
+      ],
     }
   },
   created() {
@@ -178,22 +584,13 @@ export default {
       var _this = this
       var i = 0
       var timer = setInterval(function (){
-        if (i == 5){
+        if (i == 10){
           window.clearInterval(timer)
         }
-        var j = i + 3
-        var temp = {}
-        temp.name = j + ''
-        temp.id = j
-        temp.requestVol = 10
-        temp.chargingMode = 'F'
-        temp.modeChoose = 'A'
-        temp.time = '2022/6/16 13:56:00'
-
+        var temp = _this.testData[i]
         _this.startTest(i, temp)
-
-        i ++
-      }, 2000)
+        i++
+      }, 5000)
 
     },
     startTest(i, order){
@@ -201,15 +598,40 @@ export default {
 
       switch (order.modeChoose){
         case 'A':
-          _this.onSubmit(i, order)
+          if(order.chargingMode === 'O'){
+            _this.list.push(null)
+            let j,k;
+            for (k = 0; k < i; k++){
+              if(_this.testData[k].id === _this.testData[i].id){
+                j = k;
+                console.log(613, j)
+                break;
+              }
+            }
+            _this.endCharging(j)
+          }
+          else{
+            _this.onSubmit(i, order)
+          }
           break;
         case 'B':
-          _this.fix(i, order)
+          _this.list.push(null)
+          _this.switch_broken(i, order)
           break;
         case 'C':
-          _this.change(i, order)
+          _this.list.push(null)
+          let j, k;
+          for (k = 0; k < i; k++){
+            if(_this.testData[k].id === _this.testData[i].id){
+              j = k;
+              console.log(613, j)
+              break;
+            }
+          }
+          _this.change(i, order, j)
           break;
       }
+
     },
     sleep(numberMillis) {
       var now = new Date();
@@ -220,34 +642,62 @@ export default {
           return true;
       }
     },
-    change(i, order){
+    switch_broken(i, order){
+      let _this = this;
+      if(order.name === 'F1'){
+        order.id = 1
+      }else {
+        order.id = 3
+      }
+      if(order.requestVol === 0){
+        axios.post('http://127.0.0.1:5000/admin/charger/break', {'chargerID': order.id}).then(
+            function (response){
+              if(response.data === 1){
+              }else {
+                console.log('ERROR!')
+              }
+            }
+        )
+      }
+      else{
+        axios.post('http://127.0.0.1:5000/admin/charger/fix', {'chargerID': order.id}).then(
+            function (response){
+              if(response.data === 1){
+              }else {
+                console.log('ERROR!')
+              }
+            }
+        )
+      }
+    },
+    change(i, order, j){
 
       var _this = this
-      window.clearInterval(_this.timerList[i])
-      window.clearInterval(_this.timerList2[i])
+      window.clearInterval(_this.timerList[j])
+      window.clearInterval(_this.timerList2[j])
       axios.post('http://127.0.0.1:5000/usr/modify-chargingreq', _this.list[i].order).then(
           function (response) {
             switch (data.carStatus) {
               case 3:
-                _this.list[i].area = "优先等待区"
+                _this.list[j].area = "优先等待区"
                 break;
               case 2:
-                _this.list[i].area = "等待区"
+                _this.list[j].area = "等待区"
                 break;
               case 1:
-                _this.list[i].area = "充电等待区"
+                _this.list[j].area = "充电等待区"
                 break;
               default:
-                _this.list[i].area = "充电区"
+                _this.list[j].area = "充电区"
                 break;
             }
 
-            _this.list[i].number = data.carsAhead + 1 + ""
-            _this.list[i].carsAhead = data.carsAhead + ""
+            _this.list[j].number = data.carsAhead + 1 + ""
+            _this.list[j].carsAhead = data.carsAhead + ""
 
-            _this.list[i].chargePileID = data.chargePileID
-            var str = order.name + '进入' + _this.area + '在' + order.time + '修改了' + order.requestVol + '充电量'
-            _this.ceshi.push(str)
+            _this.list[j].chargePileID = data.chargePileID
+            var s = (j+1) + '进入' + _this.area + '在' + order.time + '修改了' + order.requestVol + '充电量'
+            _this.ceshi.push(s)
             _this.timerList[i] = setInterval(function () {
               _this.perSecond(i)
             }, 1000)
@@ -269,15 +719,32 @@ export default {
       var _this = this
       axios.post('http://127.0.0.1:5000/usr/cancel', _this.list[index].order).then(
           function (response) {
-            var str = _this.list[index].order.name + '结束充电'
+            var str = (_this.list[index].order.id - 2) + '结束充电'
             _this.ceshi.push(str)
             window.clearInterval(_this.timerList[index])
             window.clearInterval(_this.timerList2[index])
+            console.log(726, response.data)
+            if(response.data.msg !== 'success to cancel!'){
+              axios.post('http://127.0.0.1:5000/usr/end-charging', _this.list[index].order).then(
+                  function (response) {
+                    _this.list[index].area = '离开'
+                    _this.list[index].chargePileID = null
+                    _this.list[index].carsAhead = null
+                    _this.isRunning = false
+                    // _this.menu = response.data
+                  }
+              ).catch(
+                  function (err){
+                    console.log(err)
+                  }
+              )
+            }
           }
       )
     },
     perSecond(i) {
       const _this = this
+      console.log(728, _this.list, _this.list[i], i)
       axios.post('http://127.0.0.1:5000/usr/car-status', _this.list[i].order).then(
           function (response) {
             _this.list[i].carsAhead = response.data.carsAhead
@@ -425,7 +892,7 @@ export default {
                 _this.area = "充电区"
                 break;
             }
-            var str = order.name + '进入' + _this.area + '在' + order.time + '申请了' + order.requestVol + '充电量'
+            var str = (order.id - 2) + '进入' + _this.area + '在' + order.time + '申请了' + order.requestVol + '充电量'
             _this.ceshi.push(str)
             var obj = {}
             obj.number = data.carsAhead + 1 + ""
@@ -445,6 +912,7 @@ export default {
             obj.usedVol = 0
 
             _this.list.push(obj)
+            console.log(895, i, _this.list)
             _this.timerList[i] = setInterval(function () {
               _this.perSecond(i)
             }, 1000)
