@@ -194,6 +194,7 @@ def usrModifyChargingReq():
             return json.dumps({'requestVol': requestVol})
         else:
             newQueueNo = db.setChargeMode(usrName, newChargeMode)
+            db.setRequestVol(usrName, requestVol)
             dispatcher.exitCar(usrName)
             dispatcher.addCar(newQueueNo, usrName, newChargeMode, requestVol)
             carStatus, chargePileID = dispatcher.carStatus(usrName)
@@ -456,7 +457,6 @@ def adminChargeFix():
     chargerID = request.json['chargerID']
     dispatcher.onCharger(chargerID)  # 算法模块中开启charger
     return str(db.setPileWork(chargerID))
-
 
 if __name__ == '__main__':
     print('HelloWorld')
