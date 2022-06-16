@@ -53,7 +53,7 @@ def printAllTestURL():
     urlTestList += '\nusrGetQueueNo: ' + request.url + url_for('usrGetQueueNo', name='Jackie', chargingMode='F')
     urlTestList += '\nadminUsrInfo: ' + request.url + url_for('adminUsrInfo')
     urlTestList += '\n}'
-    print(urlTestList)
+    # print(urlTestList)
     return urlTestList
 
 
@@ -128,11 +128,11 @@ def usrGetQueueNo():
 
     # FIXME:carStatus判断是否加入等待区
     # FIXME:addCar()需要queueNo，queueNo不包括未加入等待区的车辆
-    print("---0")
-    print(usrName)
+    # print("---0")
+    # print(usrName)
     usrInfo = db.getUserInfo(usrName)
     if usrInfo is None:
-        print("---1")
+        # print("---1")
         return json.dumps('The User: ' + str(usrName) + ' didn`t logon.')
     if dispatcher.available() is False:
         return json.dumps('There are not enough spaces in the waiting area!')
@@ -143,13 +143,13 @@ def usrGetQueueNo():
     if usrQueueNo == -1:
         return json.dumps('The chargingMode could not be understood!')
     elif usrQueueNo == -2:
-        print('-2')
+        # print('-2')
         return json.dumps('The user has been in the queue!')
     elif usrQueueNo == 0:
         return json.dumps('The account couldn`t be found!')
     # 向算法中添加排队信息
     dispatcher.addCar(usrQueueNo, usrName, chargingMode, requestVol)
-    print(152, usrName)
+    # print(152, usrName)
     # 获取车辆状态
     carStatus, chargePileID = dispatcher.carStatus(usrName)
     # 获取前序车辆数
@@ -212,18 +212,18 @@ def usrStatusPolling():
 
     # 获取车辆状态
     carStatus, chargePileID = dispatcher.carStatus(usrName)
-    print(usrName, 216, carStatus, chargePileID)
+    print(int(usrName) - 2, carStatus, chargePileID)
     # 等待中
 
     if carStatus == 3:
-        return json.dumps({'status':'prewaiting', 'carsAhead':dispatcher.carsAhead(usrName)})
+        return json.dumps({'carStatus': carStatus, 'status':'prewaiting', 'carsAhead':dispatcher.carsAhead(usrName), 'chargePileID': chargePileID})
     elif carStatus == 2:
-        return json.dumps({'status':'waiting', 'carsAhead':dispatcher.carsAhead(usrName)})
+        return json.dumps({'carStatus': carStatus, 'status':'waiting', 'carsAhead':dispatcher.carsAhead(usrName), 'chargePileID': chargePileID})
     elif carStatus == 1:
-        return json.dumps({'status':'charging-waiting', 'carsAhead':dispatcher.carsAhead(usrName)})
+        return json.dumps({'carStatus': carStatus, 'status':'charging-waiting', 'carsAhead':dispatcher.carsAhead(usrName), 'chargePileID': chargePileID})
     elif carStatus == 0:
         if usrID not in usrActiveOrder.keys():
-            return json.dumps({'status':'charging', 'carsAhead': 0})
+            return json.dumps({'carStatus': carStatus, 'status':'charging', 'carsAhead': 0, 'chargePileID': chargePileID})
 
     # 已经开始充电
     orderID = usrActiveOrder[usrID]
@@ -239,17 +239,17 @@ def usrStatusPolling():
         incVol = (const.SLOW_CHARGE_POWER) / 36  # 慢充电量增值
     actualVolUsed[orderID] += incVol
     actualChargeCost[orderID] += incVol * db.getVolPrice(datetime.now())
-    return json.dumps({'status': 'charging', 'incVol': incVol})
+    return json.dumps({'carStatus': carStatus, 'status': 'charging', 'incVol': incVol, 'chargePileID': chargePileID})
 
 
 @app.route("/usr/start-charging", methods=['POST', 'GET'])
 def usrStartCharging():
-    print(247, request.json)
     usrID = request.json['id']
     usrName = db.getUserInfo(usrID)['name']
     requestVol = request.json['requestVol']
     startVol = request.json['startVol']
     carVol = request.json['carVol']
+    print(int(usrName) - 2, "start-charging")
 
     carStatus, chargePileID = dispatcher.carStatus(usrName)
     if carStatus == 3:
@@ -274,9 +274,9 @@ def usrStartCharging():
 
 @app.route("/usr/end-charging", methods=['POST', 'GET'])
 def usrEndCharging():
-    print(280, request.json)
     usrID = request.json['id']
     usrName = db.getUserInfo(usrID)['name']
+    print(int(usrName)-2, "end-charging")
     orderID = usrActiveOrder[usrID]  # 获取usrID对应orderID
     # 计算充电时间
     chargingStartTime = db.getOrder(orderID=orderID)['startUpTime']

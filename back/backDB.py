@@ -209,6 +209,8 @@ class DB(object):
     # 表三相关
     # 添加用户信息，成功则返回刚插入用户的id，失败返回-1
     def addUser(self, name, password):
+        global Session
+        session = Session()
         if session.query(User).filter(User.name == name).first() is not None:
             return -1  # -1表示加入失败，有相同的用户名
         newUser = User(name=name, password=password)
@@ -218,6 +220,8 @@ class DB(object):
 
     # 删除用户信息
     def deleteUser(self, userNameOrID):
+        global Session
+        session = Session()
         queryResult = session.query(User).filter(
             or_(User.id == userNameOrID, User.name == userNameOrID))
         for r in queryResult:
@@ -227,6 +231,8 @@ class DB(object):
 
     # 获取用户信息
     def getUserInfo(self, nameOrID):
+        global Session
+        session = Session()
         queryResult = session.query(User).filter(or_(User.id == nameOrID, User.name == nameOrID)).first()
         if queryResult is not None:
             return json.loads(queryResult.__repr__())
@@ -234,6 +240,8 @@ class DB(object):
 
     # 匹配用户密码
     def checkUserPwd(self, nameOrID, password):
+        global Session
+        session = Session()
         queryResult = session.query(User).filter(or_(User.id == nameOrID, User.name == nameOrID)).first()
         if queryResult is not None:
             if password == queryResult.password:
@@ -245,6 +253,8 @@ class DB(object):
 
     # 修改密码
     def resetUserPwd(self, nameOrID, password):
+        global Session
+        session = Session()
         queryResult = session.query(User).filter(or_(User.id == nameOrID, User.name == nameOrID)).first()
         if queryResult is not None:
             queryResult.password = password
@@ -256,6 +266,8 @@ class DB(object):
 
     # 根据用户名求得对应id,失败返回-1
     def getUserID(self, name):
+        global Session
+        session = Session()
         queryResult = session.query(User).filter(User.name == name).first()
         if queryResult is not None:
             return queryResult.id
@@ -264,10 +276,10 @@ class DB(object):
 
     # 获取所有的用户信息，主要用来调试
     def getAllUserInfo(self):
-        print("所有用户信息如下：")
+        # print("所有用户信息如下：")
         query_result = session.query(User).all()
-        for result in query_result:
-            print(result)
+        # for result in query_result:
+            # print(result)
         return query_result
 
     # 表一相关
@@ -291,6 +303,8 @@ class DB(object):
 
     # 获得排队用户的信息
     def getQueuingUserInfo(self, nameOrID):
+        global Session
+        session = Session()
         queryResult = session.query(QueuingUser).filter(
             or_(QueuingUser.userName == nameOrID, QueuingUser.userID == nameOrID)).first()
 
@@ -359,10 +373,10 @@ class DB(object):
 
     # 获取有所有排队用户的信息，主要用来调试
     def getAllQueuingUserInfo(self):
-        print("所有排队用户信息如下：")
+        # print("所有排队用户信息如下：")
         query_result = session.query(QueuingUser).all()
-        for result in query_result:
-            print(result)
+        # for result in query_result:
+        #     print(result)
         return query_result
 
     # 表二相关
@@ -498,6 +512,8 @@ class DB(object):
 
     # 设置每个充电桩的车位数
     def setParkingSpace(self, newSpace):
+        global Session
+        session = Session()
         queryResult = session.query(EquipmentInfo).filter(EquipmentInfo.id == 1).first()
         if queryResult is None:
             return 0
@@ -584,10 +600,10 @@ class DB(object):
 
     # 获取所有订单信息，主要用来调试
     def getAllOrderInfo(self):
-        print("所有订单信息如下：")
+        # print("所有订单信息如下：")
         query_result = session.query(ChargingOrder).all()
-        for result in query_result:
-            print(result)
+        # for result in query_result:
+        #     print(result)
         return query_result
 
 
@@ -704,10 +720,10 @@ class DB(object):
 
     # 获取所有充电桩信息
     def getAllPileInfo(self):
-        print("所有充电桩信息如下：")
+        # print("所有充电桩信息如下：")
         query_result = session.query(ChargePileInfo).all()
-        for result in query_result:
-            print(result)
+        # for result in query_result:
+        #     print(result)
         return query_result
 
     # 表六相关
@@ -811,10 +827,10 @@ class DB(object):
 
     # 获取所有服务车辆信息
     def getAllServingCarInfo(self):
-        print("所有等候服务车辆信息如下：")
+        # print("所有等候服务车辆信息如下：")
         query_result = session.query(ServingCarInfoOfPile).all()
-        for result in query_result:
-            print(result)
+        # for result in query_result:
+        #     print(result)
         return query_result
 
     # 表七相关
@@ -910,10 +926,10 @@ class DB(object):
 
     # 获取所有报表信息
     def getAllReportInfo(self):
-        print("所有报表信息如下：")
+        # print("所有报表信息如下：")
         query_result = session.query(ReportOfPile).all()
-        for result in query_result:
-            print(result)
+        # for result in query_result:
+        #     print(result)
         return query_result
 
     # 初始化一些设备的常量
@@ -922,7 +938,7 @@ class DB(object):
         # 第一次打开
         if queryResult is not None:
             session.delete(queryResult)
-            print(str(queryResult))
+            # print(str(queryResult))
             session.commit()
 
         # 初始化设备信息
