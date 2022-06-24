@@ -584,7 +584,7 @@ export default {
       var _this = this
       var i = 0
       var timer = setInterval(function (){
-        if (i == 10){
+        if (i == 40){
           window.clearInterval(timer)
         }
         var temp = _this.testData[i]
@@ -867,55 +867,62 @@ export default {
       _this.vol = order.startVol
       axios.post('http://127.0.0.1:5000/usr/getqueueno', order).then(
           function (response) {
-
-            let data = response.data
-            _this.carStatus = data.carStatus
-            _this.chargePileID = data.chargePileID
-            _this.carsAhead = data.carsAhead + ""
-            _this.queueNo = data.queueNo
-            _this.number = data.carsAhead + 1 + ""
-            _this.totalCar = data.carsAhead + 1
-            _this.car_per = (data.carsAhead + 1 - data.carsAhead) / (data.carsAhead + 1) * 100
-            _this.ele_per = (_this.order.startVol / _this.order.carVol) * 100
-            _this.isRunning = true
-            switch (data.carStatus) {
-              case 3:
-                _this.area = "优先等待区"
-                break;
-              case 2:
-                _this.area = "等待区"
-                break;
-              case 1:
-                _this.area = "充电等待区"
-                break;
-              default:
-                _this.area = "充电区"
-                break;
+            console.log(870, response)
+            if(response.data == "There are not enough spaces in the waiting area!"){
+              var str = (order.id - 2) + '离开了充电桩'
+              _this.ceshi.push(str)
             }
-            var str = (order.id - 2) + '进入' + _this.area + '在' + order.time + '申请了' + order.requestVol + '充电量'
-            _this.ceshi.push(str)
-            var obj = {}
-            obj.number = data.carsAhead + 1 + ""
-            obj.carsAhead = data.carsAhead + ""
-            obj.area = _this.area
-            obj.chargePileID = data.chargePileID
-            obj.car_per = (data.carsAhead + 1 - data.carsAhead) / (data.carsAhead + 1) * 100
+            else{
+              let data = response.data
+              _this.carStatus = data.carStatus
+              _this.chargePileID = data.chargePileID
+              _this.carsAhead = data.carsAhead + ""
+              _this.queueNo = data.queueNo
+              _this.number = data.carsAhead + 1 + ""
+              _this.totalCar = data.carsAhead + 1
+              _this.car_per = (data.carsAhead + 1 - data.carsAhead) / (data.carsAhead + 1) * 100
+              _this.ele_per = (_this.order.startVol / _this.order.carVol) * 100
+              _this.isRunning = true
+              switch (data.carStatus) {
+                case 3:
+                  _this.area = "优先等待区"
+                  break;
+                case 2:
+                  _this.area = "等待区"
+                  break;
+                case 1:
+                  _this.area = "充电等待区"
+                  break;
+                default:
+                  _this.area = "充电区"
+                  break;
+              }
+              var str = (order.id - 2) + '进入' + _this.area + '在' + order.time + '申请了' + order.requestVol + '充电量'
+              _this.ceshi.push(str)
+              var obj = {}
+              obj.number = data.carsAhead + 1 + ""
+              obj.carsAhead = data.carsAhead + ""
+              obj.area = _this.area
+              obj.chargePileID = data.chargePileID
+              obj.car_per = (data.carsAhead + 1 - data.carsAhead) / (data.carsAhead + 1) * 100
 
-            obj.carVol = mode[Math.floor(Math.random() * 5)]
-            obj.startVol = Math.floor(Math.random() * (obj.carVol + 1))
-            obj.ele_per = (obj.startVol / obj.carVol) * 100
-            obj.vol = obj.startVol
-            obj.order = order
-            obj.order.startVol = obj.startVol
-            obj.order.carVol = obj.carVol
-            obj.usedCost = 0
-            obj.usedVol = 0
+              obj.carVol = mode[Math.floor(Math.random() * 5)]
+              obj.startVol = Math.floor(Math.random() * (obj.carVol + 1))
+              obj.ele_per = (obj.startVol / obj.carVol) * 100
+              obj.vol = obj.startVol
+              obj.order = order
+              obj.order.startVol = obj.startVol
+              obj.order.carVol = obj.carVol
+              obj.usedCost = 0
+              obj.usedVol = 0
 
-            _this.list.push(obj)
-            console.log(895, i, _this.list)
-            _this.timerList[i] = setInterval(function () {
-              _this.perSecond(i)
-            }, 1000)
+              _this.list.push(obj)
+              console.log(895, i, _this.list)
+              _this.timerList[i] = setInterval(function () {
+                _this.perSecond(i)
+              }, 1000)
+            }
+
 
           }
       )
